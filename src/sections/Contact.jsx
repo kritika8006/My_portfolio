@@ -1,178 +1,228 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import Reveal from "./Reveal";
-import { eyebrow } from "./tokens";
 
-// ═══════════════════════════════════════════════════════════════
-//  FULL-SCREEN 3-D ENVELOPE HERO
-// ═══════════════════════════════════════════════════════════════
-function EnvelopeHero() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    let W = el.clientWidth, H = el.clientHeight;
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
-    renderer.setSize(W,H); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
-    renderer.shadowMap.enabled = true;
-    el.appendChild(renderer.domElement);
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#0a0610");
-    scene.fog = new THREE.FogExp2("#0a0610", 0.038);
-    const camera = new THREE.PerspectiveCamera(46, W/H, 0.1, 60);
-    camera.position.set(0,1,10); camera.lookAt(0,0,0);
-
-    scene.add(new THREE.AmbientLight("#c8d0ff", 0.7));
-    const key = new THREE.DirectionalLight("#fff8f0", 3.0); key.position.set(5,8,6); key.castShadow=true; scene.add(key);
-    const fill = new THREE.PointLight("#f97316", 7, 12); fill.position.set(-3,2,4); scene.add(fill);
-    const rim  = new THREE.PointLight("#7c3aed", 5, 10); rim.position.set(3,-1,3); scene.add(rim);
-
-    const mat = c => new THREE.MeshStandardMaterial({color:c,roughness:0.45,metalness:0.3});
-
-    // ── Main envelope ──────────────────────────
-    const env = new THREE.Group();
-    const envBody = new THREE.Mesh(new THREE.BoxGeometry(3.8,2.4,0.14), mat("#fff8ef"));
-    envBody.receiveShadow = true; envBody.castShadow = true;
-    env.add(envBody);
-    
-    const mkTri = (pts, color) => {
-      const g = new THREE.BufferGeometry();
-      g.setAttribute("position", new THREE.Float32BufferAttribute(pts,3));
-      g.computeVertexNormals();
-      return new THREE.Mesh(g, mat(color));
-    };
-    env.add(mkTri([-1.9,-1.2,0.08, 0,0,0.08, 1.9,-1.2,0.08], "#f4a55a"));
-    env.add(mkTri([-1.9,1.2,0.08,  0,0,0.08, 1.9,1.2,0.08],  "#e8922a"));
-    env.add(mkTri([-1.9,-1.2,0.08,-1.9,1.2,0.08, 0,0,0.08],  "#fbbf24"));
-    env.add(mkTri([1.9,-1.2,0.08,  0,0,0.08, 1.9,1.2,0.08],  "#fbbf24"));
-    
-    const seal = new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.06,24), mat("#f97316"));
-    seal.rotation.x=Math.PI/2; seal.position.set(0,0,0.1); env.add(seal);
-    const sealPt = new THREE.PointLight("#f97316",4,3); seal.add(sealPt);
-    env.position.set(0,0,0);
-    scene.add(env);
-
-    const minis = [0,1,2,3].map(i=>{
-      const g = new THREE.Group();
-      g.add(new THREE.Mesh(new THREE.BoxGeometry(0.9,0.56,0.07), mat("#fff8ef")));
-      const s=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.04,16),mat("#f97316"));
-      s.rotation.x=Math.PI/2; s.position.z=0.05; g.add(s);
-      g.userData={r:4.5+i*0.4,speed:0.22+i*0.06,phase:(i/4)*Math.PI*2};
-      scene.add(g); return g;
-    });
-
-    const sg=new THREE.BufferGeometry();
-    const sv=[]; for(let i=0;i<400;i++) sv.push((Math.random()-0.5)*50,(Math.random()-0.5)*30,(Math.random()-0.5)*30-8);
-    sg.setAttribute("position",new THREE.Float32BufferAttribute(sv,3));
-    scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:"#c8c0ff",size:0.04,transparent:true,opacity:0.5})));
-
-    let t=0,mx=0,my=0;
-    const onMM=e=>{mx=(e.clientX/window.innerWidth-0.5)*2;my=(e.clientY/window.innerHeight-0.5)*2;};
-    window.addEventListener("mousemove",onMM);
-    const raf={id:null};
-    const loop=()=>{
-      raf.id=requestAnimationFrame(loop); t+=0.011;
-      env.rotation.y=Math.sin(t*0.5)*0.35 + mx*0.12;
-      env.position.y=Math.sin(t*0.7)*0.2 - my*0.1;
-      minis.forEach(m=>{
-        const a=m.userData.phase+t*m.userData.speed;
-        m.position.set(Math.cos(a)*m.userData.r, Math.sin(t*0.5+m.userData.phase)*0.6, Math.sin(a)*m.userData.r*0.35);
-        m.rotation.y=a+Math.PI/2;
-      });
-      fill.position.x=-3+mx; fill.position.y=2-my;
-      camera.position.x+=(mx*0.8-camera.position.x)*0.03;
-      camera.position.y+=(1-my*0.5-camera.position.y)*0.03;
-      camera.lookAt(0,0,0);
-      renderer.render(scene,camera);
-    };
-    loop();
-    const onResize=()=>{W=el.clientWidth;H=el.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);};
-    window.addEventListener("resize",onResize);
-    return()=>{cancelAnimationFrame(raf.id);window.removeEventListener("mousemove",onMM);window.removeEventListener("resize",onResize);renderer.dispose();if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);};
-  },[]);
-  return <div ref={ref} style={{width:"100%",height:"100%"}}/>;
-}
+const T = {
+  bg:"#080b10", card:"#0d1420", border:"#1e2d3d", border2:"#243447",
+  txt:"#e8f4f8", txt2:"#7a9bb5", txt3:"#3d566e",
+  teal:"#00d4b8", tealDim:"#00d4b822", tealMid:"#00d4b855", violet:"#6c63ff",
+};
 
 const LINKS = [
-  { label:"GitHub",   href:"https://github.com/kritika8006",    icon:"⌨️", desc:"See my code & repositories",  color:"#f97316" },
-  { label:"LinkedIn", href:"https://linkedin.com/in/kritika-joshi-nitj", icon:"💼", desc:"Let's connect professionally", color:"#7c3aed" },
-  { label:"Email",    href:"mailto:kritikaj.ds.24@nitj.ac.in",    icon:"✉️", desc:"Send me a message directly",  color:"#0ea5e9" },
+  { label:"GitHub",   href:"https://github.com/kritika8006", icon:"⌨️", desc:"See my code & repositories",   color:T.teal   },
+  { label:"LinkedIn", href:"https://linkedin.com/",           icon:"💼", desc:"Let's connect professionally", color:T.violet },
+  { label:"Email",    href:"mailto:your@email.com",           icon:"✉️", desc:"Send me a message directly",   color:"#0ea5e9" },
 ];
+
+// ── CODE PARTICLE HERO ───────────────────────────────────────────
+// Canvas 2D: strings of code/symbols drift toward camera in 3-D
+// perspective — like Matrix rain but sparse, elegant, dark-teal.
+function CodeParticles() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.parentElement.clientWidth;
+    let H = canvas.parentElement.clientHeight;
+    canvas.width  = W * Math.min(devicePixelRatio, 2);
+    canvas.height = H * Math.min(devicePixelRatio, 2);
+    canvas.style.width  = W + "px";
+    canvas.style.height = H + "px";
+    ctx.scale(Math.min(devicePixelRatio, 2), Math.min(devicePixelRatio, 2));
+
+    // Fragments pulled from a developer's world
+    const WORDS = [
+      "git commit","npm run dev","const x =","=> {}","useState","useEffect",
+      "fetch(url)","async/await","PORT=3000","JWT_SECRET","MongoDB","LangChain",
+      "import {","export default","return (","<Component />","404","200 OK",
+      "ssh kritika@","sudo !!","vim .env","ctrl+c","undefined","null","true",
+      "ollama run","faiss.search","rag.query","node index.js","python app.py",
+      "0x1f","0b1010","{ }","[ ]","../","./src","README.md","package.json",
+    ];
+
+    const TEAL   = "0,212,184";
+    const VIOLET = "108,99,255";
+    const BLUE   = "14,165,233";
+
+    // Each particle: a word floating in pseudo-3D space
+    const COUNT = 90;
+    const particles = Array.from({ length: COUNT }, () => reset({}));
+
+    function reset(p) {
+      p.word  = WORDS[Math.floor(Math.random() * WORDS.length)];
+      p.x     = (Math.random() - 0.5) * W * 2.2;   // spread wide
+      p.y     = (Math.random() - 0.5) * H * 2.2;
+      p.z     = Math.random() * 900 + 100;          // depth 100–1000
+      p.speed = 0.4 + Math.random() * 0.5;          // drift toward viewer
+      p.col   = Math.random() < 0.6 ? TEAL : Math.random() < 0.5 ? VIOLET : BLUE;
+      p.alpha = 0;
+      p.fade  = Math.random() < 0.5 ? "in" : "in";
+      return p;
+    }
+
+    let mx = 0, my = 0;
+    const onMM = e => { mx = (e.clientX / W - 0.5); my = (e.clientY / H - 0.5); };
+    window.addEventListener("mousemove", onMM);
+
+    let animId;
+    const FL = 500; // focal length
+
+    const loop = () => {
+      animId = requestAnimationFrame(loop);
+
+      // Dark trail
+      ctx.fillStyle = `rgba(8,11,16,0.18)`;
+      ctx.fillRect(0, 0, W, H);
+
+      const cx = W / 2 + mx * 40;
+      const cy = H / 2 + my * 30;
+
+      particles.forEach(p => {
+        // Move toward viewer
+        p.z -= p.speed * 1.8;
+
+        // Project to screen
+        const scale = FL / p.z;
+        const sx = cx + p.x * scale;
+        const sy = cy + p.y * scale;
+
+        // Fade in as it approaches, fade out when very close
+        if (p.z < 80)       p.alpha = Math.max(0, p.alpha - 0.06);
+        else if (p.z < 300) p.alpha = Math.min(1, p.alpha + 0.04);
+        else                 p.alpha = Math.min(0.75, p.alpha + 0.02);
+
+        // Reset when past viewer or off screen
+        if (p.z <= 0 || sx < -200 || sx > W + 200 || sy < -200 || sy > H + 200) {
+          reset(p);
+          p.z = 900 + Math.random() * 100;
+          p.alpha = 0;
+          return;
+        }
+
+        const fontSize = Math.max(8, scale * 11);
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.font = `${fontSize}px 'JetBrains Mono','Fira Code',monospace`;
+
+        // Glow
+        ctx.shadowColor = `rgb(${p.col})`;
+        ctx.shadowBlur  = scale > 0.6 ? 8 : 4;
+
+        ctx.fillStyle = `rgba(${p.col},${0.55 + scale * 0.35})`;
+        ctx.fillText(p.word, sx, sy);
+        ctx.restore();
+      });
+    };
+    loop();
+
+    const onResize = () => {
+      W = canvas.parentElement.clientWidth;
+      H = canvas.parentElement.clientHeight;
+      canvas.width  = W * Math.min(devicePixelRatio, 2);
+      canvas.height = H * Math.min(devicePixelRatio, 2);
+      canvas.style.width  = W + "px";
+      canvas.style.height = H + "px";
+      ctx.scale(Math.min(devicePixelRatio, 2), Math.min(devicePixelRatio, 2));
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("mousemove", onMM);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={ref}
+      style={{
+        position:"absolute", inset:0,
+        width:"100%", height:"100%",
+        background:T.bg,
+        display:"block",
+      }}
+    />
+  );
+}
 
 export default function Contact() {
   return (
-    <div style={{ fontFamily:"'Inter',system-ui,sans-serif", background:"#0a0610", minHeight:"100vh" }}>
-      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}`}</style>
+    <div style={{ fontFamily:"'Inter',system-ui,sans-serif", background:T.bg, minHeight:"100vh", color:T.txt }}>
+      <style>{`
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse  { 0%,100%{opacity:0.4} 50%{opacity:1} }
+      `}</style>
 
-      {/* ── HERO ──────────────────────────────── */}
+      {/* ── HERO ── */}
       <div style={{ position:"relative", height:"100vh", minHeight:560, overflow:"hidden" }}>
-        <div style={{ position:"absolute", inset:0 }}><EnvelopeHero /></div>
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom,rgba(10,6,16,0.1) 0%,rgba(10,6,16,0) 35%,rgba(10,6,16,0.7) 80%,rgba(10,6,16,1) 100%)", pointerEvents:"none" }} />
+        <CodeParticles />
+        {/* vignette */}
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none",
+          background:`radial-gradient(ellipse at center, transparent 30%, ${T.bg}bb 100%)`,
+        }} />
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none",
+          background:`linear-gradient(to bottom,${T.bg}22 0%,transparent 25%,transparent 65%,${T.bg}ee 90%,${T.bg} 100%)`,
+        }} />
+
         <div style={{ position:"absolute", bottom:60, left:0, right:0, textAlign:"center", animation:"fadeUp 0.8s ease both", pointerEvents:"none" }}>
-          <span style={{ fontSize:"0.68rem",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",color:"#f97316",display:"block",marginBottom:"0.5rem" }}>Portfolio · Contact</span>
-          <h1 style={{ color:"rgba(230,220,255,0.95)", fontSize:"clamp(2.2rem,5vw,3.8rem)", fontWeight:900, letterSpacing:"-0.04em", margin:"0 0 0.5rem" }}>Let's Talk</h1>
-          <p style={{ color:"rgba(180,160,220,0.4)", fontSize:"0.95rem", margin:0 }}>Move your mouse to interact with the envelope</p>
+          <span style={{ fontSize:"0.68rem", fontWeight:600, letterSpacing:"0.2em", textTransform:"uppercase", color:T.teal, display:"block", marginBottom:"0.5rem" }}>Portfolio · Contact</span>
+          <h1 style={{ color:"#f0f9ff", fontSize:"clamp(2.2rem,5vw,3.8rem)", fontWeight:800, letterSpacing:"-0.04em", margin:"0 0 0.5rem" }}>Let's Talk</h1>
+          <p style={{ color:`${T.txt2}88`, fontSize:"0.95rem", margin:0 }}>Every connection starts with a message</p>
         </div>
         <div style={{ position:"absolute", bottom:22, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:5, animation:"pulse 2s ease infinite" }}>
-          <div style={{ width:1, height:28, background:"rgba(124,58,237,0.5)" }} />
-          <span style={{ color:"rgba(124,58,237,0.5)", fontSize:"0.65rem", letterSpacing:"0.18em", textTransform:"uppercase" }}>scroll</span>
+          <div style={{ width:1, height:28, background:`${T.teal}55` }} />
+          <span style={{ color:`${T.teal}55`, fontSize:"0.65rem", letterSpacing:"0.18em", textTransform:"uppercase" }}>scroll</span>
         </div>
       </div>
 
-      {/* ── CONTACT LINKS ─────────────────────── */}
-      <div style={{ background:"#FFF8EF", padding:"5rem 2.5rem" }}>
+      {/* ── LINKS ── */}
+      <div style={{ background:T.bg, padding:"5rem 2.5rem", borderTop:`1px solid ${T.border}` }}>
         <div style={{ maxWidth:"52rem", margin:"0 auto" }}>
           <Reveal delay={0}>
-            <span style={{ fontSize:"0.68rem",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",color:"#f97316",display:"block",marginBottom:"0.5rem" }}>Get in touch</span>
-            <h2 style={{ fontSize:"clamp(1.8rem,3.5vw,2.6rem)", fontWeight:900, color:"#78350f", letterSpacing:"-0.03em", margin:"0 0 0.6rem" }}>I'm always open to<br/>something new</h2>
-            <p style={{ color:"#92400e", opacity:0.55, marginBottom:"3rem", fontSize:"0.95rem", maxWidth:"34rem" }}>
+            <span style={{ fontSize:"0.68rem", fontWeight:600, letterSpacing:"0.2em", textTransform:"uppercase", color:T.teal, display:"block", marginBottom:"0.5rem" }}>Get in touch</span>
+            <h2 style={{ fontSize:"clamp(1.8rem,3.5vw,2.6rem)", fontWeight:800, color:"#f0f9ff", letterSpacing:"-0.03em", margin:"0 0 0.6rem", lineHeight:1.2 }}>
+              I'm always open to<br />something new
+            </h2>
+            <p style={{ color:T.txt2, marginBottom:"3rem", fontSize:"0.92rem", maxWidth:"34rem", lineHeight:1.75 }}>
               Whether it's a project, collaboration, internship, or just a conversation about tech — feel free to reach out.
             </p>
           </Reveal>
 
-          <div style={{ display:"flex", flexDirection:"column", gap:"1rem", marginBottom:"3rem" }}>
-            {LINKS.map((l,i)=>(
-              <Reveal key={l.label} delay={0.1+i*0.1}>
-                <a href={l.href} target={l.href.startsWith("mailto")?"_self":"_blank"} rel="noreferrer"
-                  style={{
-                    display:"flex", alignItems:"center", gap:"1.25rem",
-                    background:"#fff", borderRadius:"1.25rem",
-                    padding:"1.4rem 1.75rem",
-                    boxShadow:"0 2px 16px rgba(120,53,15,0.07)",
-                    border:`1px solid ${l.color}22`,
-                    textDecoration:"none",
-                    transition:"transform 0.3s, box-shadow 0.3s",
-                  }}
-                  onMouseEnter={e=>{e.currentTarget.style.transform="translateX(8px)";e.currentTarget.style.boxShadow=`0 10px 36px ${l.color}22`;}}
-                  onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 2px 16px rgba(120,53,15,0.07)";}}>
-                  <div style={{ width:52, height:52, borderRadius:"1rem", background:`${l.color}15`, border:`1.5px solid ${l.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.5rem", flexShrink:0 }}>
-                    {l.icon}
-                  </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:"0.85rem", marginBottom:"2.5rem" }}>
+            {LINKS.map((l, i) => (
+              <Reveal key={l.label} delay={0.1 + i * 0.1}>
+                <a href={l.href} target={l.href.startsWith("mailto") ? "_self" : "_blank"} rel="noreferrer"
+                  style={{ display:"flex", alignItems:"center", gap:"1.25rem", background:T.card, borderRadius:"12px", padding:"1.25rem 1.5rem", border:`1px solid ${T.border}`, borderLeft:`3px solid ${l.color}`, textDecoration:"none", transition:"transform .28s cubic-bezier(.22,1,.36,1), border-color .28s, box-shadow .28s" }}
+                  onMouseEnter={e=>{ e.currentTarget.style.transform="translateX(6px)"; e.currentTarget.style.boxShadow=`0 8px 32px ${l.color}1a`; e.currentTarget.style.borderColor=l.color; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow=""; e.currentTarget.style.borderColor=T.border; }}>
+                  <div style={{ width:48, height:48, borderRadius:"10px", background:`${l.color}15`, border:`1px solid ${l.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.4rem", flexShrink:0 }}>{l.icon}</div>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontWeight:700, color:"#78350f", fontSize:"1.05rem" }}>{l.label}</div>
-                    <div style={{ color:"#9ca3af", fontSize:"0.85rem" }}>{l.desc}</div>
+                    <div style={{ fontWeight:700, color:"#f0f9ff", fontSize:"1rem" }}>{l.label}</div>
+                    <div style={{ color:T.txt2, fontSize:"0.83rem", marginTop:2 }}>{l.desc}</div>
                   </div>
-                  <div style={{ color:l.color, fontSize:"1.3rem", fontWeight:700 }}>→</div>
+                  <div style={{ color:l.color, fontSize:"1.2rem", fontWeight:700 }}>→</div>
                 </a>
               </Reveal>
             ))}
           </div>
 
           <Reveal delay={0.4}>
-            <div style={{ textAlign:"center", padding:"2rem", background:"#fff", borderRadius:"1.25rem", boxShadow:"0 2px 16px rgba(120,53,15,0.07)", border:"1px solid rgba(251,191,36,0.14)" }}>
-              <p style={{ color:"#6b7280", fontSize:"0.95rem", margin:"0 0 0.5rem" }}>Based in <strong style={{color:"#78350f"}}>India</strong> · Open to <strong style={{color:"#78350f"}}>remote work</strong></p>
-              <p style={{ color:"#9ca3af", fontSize:"0.82rem", margin:0 }}>Usually replies within 24 hours ✦</p>
+            <div style={{ textAlign:"center", padding:"1.75rem", background:T.card, borderRadius:"12px", border:`1px solid ${T.border}` }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginBottom:6 }}>
+                <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", display:"inline-block", boxShadow:"0 0 8px #4ade80" }} />
+                <p style={{ color:T.txt, fontSize:"0.92rem", margin:0 }}>Based in <strong style={{ color:"#f0f9ff" }}>India</strong> · Open to <strong style={{ color:"#f0f9ff" }}>remote work</strong></p>
+              </div>
+              <p style={{ color:T.txt3, fontSize:"0.8rem", margin:0 }}>Usually replies within 24 hours ✦</p>
             </div>
           </Reveal>
         </div>
       </div>
 
-      {/* ── DARK CLOSING ──────────────────────── */}
-      <div style={{ background:"#0a0610", padding:"4rem 2.5rem", textAlign:"center" }}>
+      <div style={{ background:"#060810", padding:"3rem 2.5rem", textAlign:"center", borderTop:`1px solid ${T.border}` }}>
         <Reveal delay={0}>
-          <p style={{ color:"rgba(180,160,220,0.3)", fontSize:"0.85rem", fontFamily:"monospace", letterSpacing:"0.06em" }}>
-            {"// made with ♥ by Kritika Joshi · 2026"}
-          </p>
+          <p style={{ color:T.txt3, fontSize:"0.82rem", fontFamily:"monospace", letterSpacing:"0.06em", margin:0 }}>{"// made with ♥ by Kritika Jain · 2025"}</p>
         </Reveal>
       </div>
     </div>

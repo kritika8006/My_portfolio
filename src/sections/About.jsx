@@ -43,7 +43,7 @@ const STACK = [
 ];
 
 const STATS = [
-  { num: "8.7",  label: "CGPA at NIT Jalandhar",   color: T.teal   },
+  { num: "8.63",  label: "CGPA at NIT Jalandhar",   color: T.teal   },
   { num: "5+",   label: "Projects shipped",          color: T.violet },
   { num: "200+", label: "Students reached via CSC",  color: "#0ea5e9" },
   { num: "∞",    label: "Things still to learn",     color: "#10b981" },

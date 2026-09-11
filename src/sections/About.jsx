@@ -264,7 +264,7 @@ export default function About() {
                   Developer, Leader<br />& AI Enthusiast
                 </h2>
                 <p style={{ color: T.txt2, lineHeight: 1.85, fontSize: "0.95rem", marginBottom: "1rem" }}>
-                  I'm Kritika — a B.Tech DSE student at NIT Jalandhar with a CGPA of 8.7. I build full-stack web apps,
+                  I'm Kritika — a B.Tech DSE student at NIT Jalandhar with a CGPA of 8.63. I build full-stack web apps,
                   lead the Cyber Security Club, and explore AI systems that solve real problems.
                 </p>
                 <p style={{ color: T.txt2, lineHeight: 1.85, fontSize: "0.95rem", marginBottom: "1.75rem" }}>

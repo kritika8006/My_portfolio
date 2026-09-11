@@ -28,7 +28,7 @@ const PROJECTS = [
     description:
       "A RAG-based tool to search and analyse local codebases using fully local LLMs — built for developer privacy. No API keys, no cloud. Uses Gemma 3 via Ollama and FAISS for vector search.",
     tags: ["LangChain", "Ollama", "FAISS", "Node.js", "Python"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/code-chat-ai",
     color: "#00d4b8",
   },
   {
@@ -38,7 +38,7 @@ const PROJECTS = [
     description:
       "An AI-powered travel planning application that aggregates user preferences to generate personalized itineraries, utilizing the Gemini API for intelligent route optimization.",
     tags: ["React", "Gemini API", "Node.js", "TailwindCSS"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/tripwise",
     color: "#f59e0b",
     image: "/projects/tripwise.png",
   },
@@ -49,7 +49,7 @@ const PROJECTS = [
     description:
       "A prototype speech therapy app for autistic children with AI-driven contextual feedback. Full-stack MERN app with a FastAPI Python backend powering the AI analysis layer.",
     tags: ["React", "Node.js", "FastAPI", "MongoDB", "Python"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/communication-link",
     color: "#6c63ff",
     image: "/projects/aac-dashboard.png",
   },
@@ -60,7 +60,7 @@ const PROJECTS = [
     description:
       "Official NIT Jalandhar CSC platform built with the club team — features secure authentication with JWT, event listings, CTF announcements, and a member dashboard.",
     tags: ["React", "Node.js", "MongoDB", "JWT", "TailwindCSS"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/CSC_NITJ_Web",
     color: "#0ea5e9",
     image: "/projects/csc-nitj.png",
   },
@@ -71,7 +71,7 @@ const PROJECTS = [
     description:
       "A community-driven clothing exchange platform for sustainable fashion. Users can list, browse, and swap clothing items, with image uploads via Cloudinary and secure user auth.",
     tags: ["React", "Node.js", "MongoDB", "Cloudinary", "JWT"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/Rewear",
     color: "#10b981",
     image: "/projects/helpyuva-rewear.png",
   },
@@ -82,7 +82,7 @@ const PROJECTS = [
     description:
       "A full-stack inventory system for library management with role-based access control — separate admin and user portals for secure book tracking, issue management, and reporting.",
     tags: ["MongoDB", "Express", "React", "Node.js", "JWT"],
-    github: "https://github.com/kritika8006",
+    github: "github.com/kritika8006/OptiReserveClient",
     color: "#f59e0b",
   },
   {
@@ -92,7 +92,7 @@ const PROJECTS = [
     description:
       "An AI-powered text-to-image generator with credit-based billing. Razorpay checkout, MongoDB-backed accounts, and instant image generation.",
     tags: ["Next.js", "TypeScript", "Razorpay", "MongoDB"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/imageCreation",
     color: "#3b82f6",
     image: "/projects/imagify.png",
   },
@@ -103,7 +103,7 @@ const PROJECTS = [
     description:
       "A mock interview platform that generates role-based technical questions, evaluates answers with a local LLM, and provides model answers — fully offline for privacy.",
     tags: ["Python", "Next.js", "TailwindCSS", "Local LLM"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/AI-interview-stimulator2",
     color: "#22c55e",
     image: "/projects/ai-interview-simulator.png",
   },
@@ -114,7 +114,7 @@ const PROJECTS = [
     description:
       "Gesture-controlled air writing using real-time hand tracking — hover, write, and erase on a virtual canvas without touching anything.",
     tags: ["Python", "OpenCV", "MediaPipe"],
-    github: "https://github.com/kritika8006",
+    github: "https://github.com/kritika8006/ai_writer",
     color: "#ec4899",
     image: "/projects/ai-neon-hud.png",
   },

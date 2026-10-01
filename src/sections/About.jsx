@@ -4,17 +4,17 @@ import Reveal from "./Reveal";
 
 // ─── Design tokens ───────────────────────────────────────────────
 const T = {
-  bg:      "#080b10",
-  card:    "#0d1420",
-  border:  "#1e2d3d",
-  border2: "#243447",
-  txt:     "#e8f4f8",
-  txt2:    "#7a9bb5",
-  txt3:    "#3d566e",
-  teal:    "#00d4b8",
-  tealDim: "#00d4b822",
-  tealMid: "#00d4b855",
-  violet:  "#6c63ff",
+  bg:      "#160f08",
+  card:    "#1c130a",
+  border:  "#3a2a18",
+  border2: "#4a3320",
+  txt:     "#f5ead8",
+  txt2:    "#b89a72",
+  txt3:    "#6b5238",
+  teal:    "#e8a44a",
+  tealDim: "#e8a44a22",
+  tealMid: "#e8a44a55",
+  violet:  "#c97b3a",
 };
 
 // ─── Data ────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ const JOURNEY = [
     text: "Shipped production MERN apps — from a clothing exchange platform to an institutional CSC website used by real students.",
   },
   {
-    icon: "🛡️", title: "The Club Head", color: "#0ea5e9",
+    icon: "🛡️", title: "The Club Head", color: "#d4884a",
     text: "Leading NIT Jalandhar's Cyber Security Club — running CTFs, workshops, and managing the official web platform.",
   },
   {
@@ -45,7 +45,7 @@ const STACK = [
 const STATS = [
   { num: "8.63",  label: "CGPA at NIT Jalandhar",   color: T.teal   },
   { num: "5+",   label: "Projects shipped",          color: T.violet },
-  { num: "200+", label: "Students reached via CSC",  color: "#0ea5e9" },
+  { num: "200+", label: "Students reached via CSC",  color: "#d4884a" },
   { num: "∞",    label: "Things still to learn",     color: "#10b981" },
 ];
 
@@ -67,8 +67,8 @@ function DeskHero() {
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#080b10");
-    scene.fog = new THREE.FogExp2("#080b10", 0.045);
+    scene.background = new THREE.Color("#160f08");
+    scene.fog = new THREE.FogExp2("#160f08", 0.045);
 
     const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 60);
     camera.position.set(5, 4, 6);
@@ -78,11 +78,11 @@ function DeskHero() {
     const sun = new THREE.DirectionalLight("#fff8e8", 3.2);
     sun.position.set(6, 10, 7); sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -0.002; scene.add(sun);
-    const lamp = new THREE.PointLight("#00d4b8", 7, 7);
+    const lamp = new THREE.PointLight("#e8a44a", 7, 7);
     lamp.position.set(-1.4, 4.1, -0.9); lamp.castShadow = true; scene.add(lamp);
     const screenLight = new THREE.PointLight("#9de4f8", 3.5, 5);
     screenLight.position.set(0, 3.2, -0.8); scene.add(screenLight);
-    const led = new THREE.PointLight("#6c63ff", 2.5, 5);
+    const led = new THREE.PointLight("#c97b3a", 2.5, 5);
     led.position.set(0, 2.1, -1.5); scene.add(led);
 
     const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72, metalness: 0.06 });
@@ -97,41 +97,41 @@ function DeskHero() {
     };
 
     // Floor & wall
-    bx(20, 0.12, 20, "#0a0e14", 0, -0.06, 0);
-    bx(20, 14, 0.2, "#080b10", 0, 7, -5.5);
+    bx(20, 0.12, 20, "#150e08", 0, -0.06, 0);
+    bx(20, 14, 0.2, "#160f08", 0, 7, -5.5);
     // Desk
-    bx(6, 0.18, 2.8, "#1a2535", 0, 1.82, 0);
+    bx(6, 0.18, 2.8, "#4a2c14", 0, 1.82, 0);
     [[-2.6, -1.1], [-2.6, 1.1], [2.6, -1.1], [2.6, 1.1]].forEach(([x, z]) =>
-      bx(0.14, 1.82, 0.14, "#0f1a28", x, 0.91, z));
+      bx(0.14, 1.82, 0.14, "#2a1a0e", x, 0.91, z));
     // Bookshelf
-    bx(1.3, 1.6, 2.5, "#0f1a28", 2.5, 1.0, 0);
+    bx(1.3, 1.6, 2.5, "#2a1a0e", 2.5, 1.0, 0);
     // Monitor
-    bx(3.0, 1.85, 0.1, "#0a0e14", 0, 3.72, -1.25);
+    bx(3.0, 1.85, 0.1, "#150e08", 0, 3.72, -1.25);
     bx(2.78, 1.65, 0.06, "#9de4f8", 0, 3.72, -1.21);
-    bx(0.12, 0.65, 0.12, "#1e2d3d", 0, 2.64, -1.25);
-    bx(0.85, 0.07, 0.5, "#1e2d3d", 0, 2.35, -1.25);
+    bx(0.12, 0.65, 0.12, "#3a2a18", 0, 2.64, -1.25);
+    bx(0.85, 0.07, 0.5, "#3a2a18", 0, 2.35, -1.25);
     // Code lines on screen
-    ["#00d4b8", "#6c63ff", "#4ade80", "#f59e0b", "#94a3b8"].forEach((c, i) =>
+    ["#e8a44a", "#c97b3a", "#4ade80", "#f59e0b", "#b89a72"].forEach((c, i) =>
       bx(0.4 + i * 0.18, 0.05, 0.02, c, -0.75 + i * 0.48, 3.82 - i * 0.22, -1.19));
     // Side monitor
-    bx(1.8, 1.1, 0.08, "#0a0e14", -1.75, 3.15, -1.22, 0, 0.18, 0);
+    bx(1.8, 1.1, 0.08, "#150e08", -1.75, 3.15, -1.22, 0, 0.18, 0);
     bx(1.62, 0.96, 0.05, "#9de4f8", -1.75, 3.15, -1.19, 0, 0.18, 0);
     // Keyboard
-    bx(2.0, 0.07, 0.72, "#0d1420", 0, 2.22, -0.65);
+    bx(2.0, 0.07, 0.72, "#1c130a", 0, 2.22, -0.65);
     for (let i = -4; i <= 4; i++) for (let j = -1; j <= 1; j++)
-      bx(0.18, 0.05, 0.18, "#1e2d3d", i * 0.22, 2.255, -0.65 + j * 0.18);
+      bx(0.18, 0.05, 0.18, "#3a2a18", i * 0.22, 2.255, -0.65 + j * 0.18);
     // Mouse
-    bx(0.36, 0.1, 0.55, "#0d1420", 1.85, 2.24, -0.45);
+    bx(0.36, 0.1, 0.55, "#1c130a", 1.85, 2.24, -0.45);
     // LED strip
     bx(6, 0.05, 0.06, T.teal, 0, 2.23, -1.6);
     // Lamp
-    cy(0.06, 0.06, 1.4, "#7a9bb5", -1.95, 2.93, -1.35);
-    bx(0.06, 0.52, 0.06, "#7a9bb5", -1.95, 3.77, -1.35, 0.44, 0, 0);
-    cy(0.2, 0.28, 0.42, "#00d4b8", -1.72, 4.04, -1.14, 8);
-    cy(0.2, 0.2, 0.06, "#7a9bb5", -1.95, 2.26, -1.35);
+    cy(0.06, 0.06, 1.4, "#b89a72", -1.95, 2.93, -1.35);
+    bx(0.06, 0.52, 0.06, "#b89a72", -1.95, 3.77, -1.35, 0.44, 0, 0);
+    cy(0.2, 0.28, 0.42, "#e8a44a", -1.72, 4.04, -1.14, 8);
+    cy(0.2, 0.2, 0.06, "#b89a72", -1.95, 2.26, -1.35);
     // Plant pot
     cy(0.19, 0.15, 0.38, "#1e3a2f", -2.6, 2.2, -1.35);
-    cy(0.15, 0.13, 0.32, "#2d1f4a", -2.6, 2.37, -1.35);
+    cy(0.15, 0.13, 0.32, "#4a2a1a", -2.6, 2.37, -1.35);
     bx(0.08, 0.2, 0.08, "#1e3a2f", -2.38, 2.12, -1.35);
     // Small plant
     cy(0.14, 0.12, 0.28, "#1a2820", -3.1, 2.2, -1.45);
@@ -141,19 +141,19 @@ function DeskHero() {
     bx(0.2, 0.06, 0.2, "#10b981", -3.28, 2.65, -1.35, 0, 0, -0.3);
     // Chair
     [[-0.7, 1.5], [-0.7, 3.3], [1.7, 1.5], [1.7, 3.3]].forEach(([x, z]) =>
-      bx(0.12, 1.55, 0.12, "#0f1a28", x, 0.77, z));
-    bx(1.75, 0.15, 1.75, "#0d1420", 0.5, 1.61, 2.4);
+      bx(0.12, 1.55, 0.12, "#2a1a0e", x, 0.77, z));
+    bx(1.75, 0.15, 1.75, "#1c130a", 0.5, 1.61, 2.4);
     bx(1.62, 0.13, 1.62, T.teal, 0.5, 1.74, 2.4);
-    bx(1.75, 1.5, 0.14, "#0d1420", 0.5, 2.5, 1.5);
+    bx(1.75, 1.5, 0.14, "#1c130a", 0.5, 2.5, 1.5);
     bx(1.62, 1.38, 0.08, T.teal, 0.5, 2.46, 1.49);
     // Books
-    [["#00d4b8", 0], ["#6c63ff", 0.14], ["#10b981", 0.28]].forEach(([c, dy]) =>
+    [["#e8a44a", 0], ["#c97b3a", 0.14], ["#10b981", 0.28]].forEach(([c, dy]) =>
       bx(0.65, 0.13, 2.0, c, 1.6 + dy * 0.5, 2.5 + dy, 0));
     // Sticky notes
     bx(0.3, 0.28, 0.04, "#fbbf24", -0.8, 2.22, -1.42);
-    bx(0.28, 0.26, 0.04, "#6c63ff", -0.48, 2.22, -1.42);
+    bx(0.28, 0.26, 0.04, "#c97b3a", -0.48, 2.22, -1.42);
     // Rug
-    bx(6, 0.03, 4.5, "#0d1420", 0, 0.01, 1.5);
+    bx(6, 0.03, 4.5, "#6b3d24", 0, 0.01, 1.5);
 
     let t = 0, mouseX = 0, mouseY = 0;
     const onMM = e => {
@@ -213,7 +213,7 @@ export default function About() {
         <div style={{ position: "absolute", inset: 0 }}><DeskHero /></div>
         <div style={{
           position: "absolute", inset: 0,
-          background: `linear-gradient(to bottom, rgba(8,11,16,0.1) 0%, rgba(8,11,16,0) 40%, rgba(8,11,16,0.8) 85%, rgba(8,11,16,1) 100%)`,
+          background: `linear-gradient(to bottom, rgba(22,15,8,0.1) 0%, rgba(22,15,8,0) 40%, rgba(22,15,8,0.8) 85%, rgba(22,15,8,1) 100%)`,
           pointerEvents: "none",
         }} />
         <div style={{
@@ -225,7 +225,7 @@ export default function About() {
             textTransform: "uppercase", color: T.teal, display: "block", marginBottom: "0.5rem",
           }}>Portfolio · About</span>
           <h1 style={{
-            color: "rgba(232,244,248,0.95)",
+            color: "rgba(245,234,216,0.95)",
             fontSize: "clamp(2.2rem,5vw,3.8rem)", fontWeight: 800,
             letterSpacing: "-0.04em", margin: "0 0 0.5rem",
           }}>
@@ -259,7 +259,7 @@ export default function About() {
                 }}>Who I Am</span>
                 <h2 style={{
                   fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 800,
-                  color: "#f0f9ff", letterSpacing: "-0.03em", margin: "0 0 1.25rem", lineHeight: 1.15,
+                  color: "#f5ead8", letterSpacing: "-0.03em", margin: "0 0 1.25rem", lineHeight: 1.15,
                 }}>
                   Developer, Leader<br />& AI Enthusiast
                 </h2>
@@ -312,7 +312,7 @@ export default function About() {
       </div>
 
       {/* ── JOURNEY ──────────────────────────── */}
-      <div style={{ background: "#060810", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: "#100b05", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "68rem", margin: "0 auto" }}>
           <Reveal delay={0}>
             <span style={{
@@ -321,7 +321,7 @@ export default function About() {
             }}>My Journey</span>
             <h2 style={{
               fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 800,
-              color: "#f0f9ff", letterSpacing: "-0.03em", margin: "0 0 3rem",
+              color: "#f5ead8", letterSpacing: "-0.03em", margin: "0 0 3rem",
             }}>How I got here</h2>
           </Reveal>
           <div style={{ display: "grid", gap: "1.1rem", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))" }}>
@@ -365,7 +365,7 @@ export default function About() {
             }}>Currently</span>
             <h2 style={{
               fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 800,
-              color: "#f0f9ff", letterSpacing: "-0.03em", margin: "0 0 2rem",
+              color: "#f5ead8", letterSpacing: "-0.03em", margin: "0 0 2rem",
             }}>What I'm up to</h2>
             {/* Terminal */}
             <div style={{ borderRadius: "12px", overflow: "hidden", border: `1px solid ${T.border2}` }}>
@@ -382,23 +382,23 @@ export default function About() {
                 </span>
               </div>
               <div style={{
-                background: "#060a10", padding: "1.75rem 2rem",
+                background: "#0e0904", padding: "1.75rem 2rem",
                 fontFamily: "'JetBrains Mono','Fira Code',monospace",
                 fontSize: "0.88rem", lineHeight: 2.1,
                 display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "0 3rem",
               }}>
                 <div>
                   <p style={{ color: T.teal, margin: 0 }}>&gt; current_role</p>
-                  <p style={{ color: "#4ade80", margin: "0.2rem 0 1rem" }}>Cyber Security Club Head — NITJ</p>
+                  <p style={{ color: "#d4a24c", margin: "0.2rem 0 1rem" }}>Cyber Security Club Head — NITJ</p>
                   <p style={{ color: T.teal, margin: 0 }}>&gt; building_now</p>
-                  <p style={{ color: "#4ade80", margin: "0.2rem 0 1rem" }}>
+                  <p style={{ color: "#d4a24c", margin: "0.2rem 0 1rem" }}>
                     TPO Portal · AI Code Assistant
                     <span style={{ animation: "blink 1s step-end infinite" }}>_</span>
                   </p>
                 </div>
                 <div>
                   <p style={{ color: T.teal, margin: 0 }}>&gt; learning</p>
-                  <p style={{ color: "#4ade80", margin: "0.2rem 0 1rem" }}>LangChain · RAG · Ollama · FAISS</p>
+                  <p style={{ color: "#d4a24c", margin: "0.2rem 0 1rem" }}>LangChain · RAG · Ollama · FAISS</p>
                   <p style={{ color: T.teal, margin: 0 }}>&gt; goal</p>
                   <p style={{ color: T.txt, margin: "0.2rem 0 1rem" }}>AI tools that actually help people.</p>
                   <p style={{ color: T.txt3, margin: 0 }}>// always building</p>

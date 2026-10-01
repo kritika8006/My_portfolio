@@ -8,9 +8,9 @@ const T = {
   txt:    "#241c14",
   txt2:   "#6b6155",
   txt3:   "#9c9184",
-  teal:   "#0f8f7a",
-  violet: "#5a4fd6",
-  blue:   "#0a76ab",
+  teal:   "#b8621a",
+  violet: "#8b4a2a",
+  blue:   "#d4a24c",
 };
 
 // ── PLACE THE TWO VIDEO FILES HERE IN YOUR PROJECT ──────────────
@@ -30,9 +30,9 @@ const LINKEDIN_LOGO = "/icons/linkedin-logo.png";
 const GMAIL_LOGO = "/icons/gmail-logo.png";
 
 const CHAPTERS = [
-  { label: "GitHub",   value: "@kritika8006",       href: "https://github.com/kritika8006",                accent: T.teal,   logo: GITHUB_LOGO,   kind: "link" },
+  { label: "GitHub",   value: "@kritika8006",       href: "https://github.com/kritika8006",                accent:T.violet,   logo: GITHUB_LOGO,   kind: "link" },
   { label: "LinkedIn", value: "kritika-joshi-nitj", href: "https://www.linkedin.com/in/kritika-joshi-nitj", accent: T.violet, logo: LINKEDIN_LOGO, kind: "link" },
-  { label: "Email",    value: EMAIL_ADDR,           href: `mailto:${EMAIL_ADDR}`,                          accent: T.blue,   logo: GMAIL_LOGO,    kind: "email" },
+  { label: "Email",    value: EMAIL_ADDR,           href: `mailto:${EMAIL_ADDR}`,                          accent: T.violet,   logo: GMAIL_LOGO,    kind: "email" },
 ];
 
 const prefersReducedMotion = () =>
@@ -340,12 +340,12 @@ export default function Contact() {
       fontWeight: 800,
       letterSpacing: "0.22em",
       textTransform: "uppercase",
-color: "#4B5563",
+color: "#8b7355",
       fontFamily: "'Poppins', sans-serif",
 
       textShadow: `
         0 1px 1px rgba(255,255,255,.55),
-        0 3px 10px rgba(39,76,119,.35)
+        0 3px 10px rgba(139,90,43,.35)
       `,
     }}
   >
@@ -454,7 +454,7 @@ color: "#4B5563",
       </div>
 
       <div style={{ textAlign: "center", padding: "1.75rem", borderTop: `1px solid ${T.border}` }}>
-        <p style={{ color: T.txt3, fontSize: "0.8rem", margin: 0 }}>{"// made with ♥ by Kritika Joshi · 2026"}</p>
+        
       </div>
     </div>
   );

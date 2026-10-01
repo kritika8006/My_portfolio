@@ -5,14 +5,14 @@ import { CylinderCarousel } from "../components/CylindricalCarousel";
 
 // ─── Design tokens ───────────────────────────────────────────────
 const T = {
-  bg:       "#080b10",
-  card:     "#0d1420",
-  card2:    "#111827",
-  border:   "#1e2d3d",
-  border2:  "#243447",
-  txt:      "#e8f4f8",
-  txt2:     "#7a9bb5",
-  txt3:     "#3d566e",
+  bg:       "#160f08",
+  card:     "#1c130a",
+  card2:    "#21160a",
+  border:   "#3a2a18",
+  border2:  "#4a3320",
+  txt:      "#f5ead8",
+  txt2:     "#b89a72",
+  txt3:     "#6b5238",
   teal:     "#00d4b8",
   tealDim:  "#00d4b822",
   tealMid:  "#00d4b855",
@@ -174,7 +174,7 @@ function AITerminal() {
         ))}
       </div>
       <div style={{
-        background: "#060a10", padding: "20px 24px", fontFamily: "'JetBrains Mono','Fira Code',monospace",
+        background: "#0e0904", padding: "20px 24px", fontFamily: "'JetBrains Mono','Fira Code',monospace",
         fontSize: "13px", lineHeight: 2, minHeight: 220,
       }}>
         {AI_LINES.slice(0, shown).map((l, i) => (
@@ -204,7 +204,7 @@ function ProjectCard({ project, onSelect }) {
         transition: "transform .28s, border-color .28s",
       }}
     >
-      <div style={{ height: 96, position: "relative", overflow: "hidden", background: "linear-gradient(135deg,#0a1020,#0d1830)", borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ height: 96, position: "relative", overflow: "hidden", background: "linear-gradient(135deg,#150e08,#1f150a)", borderBottom: `1px solid ${T.border}` }}>
         {project.image && (
           <img
             src={project.image}
@@ -223,7 +223,7 @@ function ProjectCard({ project, onSelect }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}>
           {project.tags.map(t => (
             <span key={t} style={{
-              fontSize: 10, fontFamily: "monospace", color: T.txt2, background: "#0a1020",
+              fontSize: 10, fontFamily: "monospace", color: T.txt2, background: "#150e08",
               border: `1px solid ${T.border}`, padding: "1px 6px", borderRadius: 3
             }}>{t}</span>
           ))}
@@ -271,7 +271,7 @@ export default function Projects({ setSelectedProject }) {
       </div>
 
       {/* ── AI CORNER ── */}
-      <div style={{ background: "#060810", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: "#100b05", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "76rem", margin: "0 auto" }}>
           <h2 style={{ fontSize: "2.4rem", fontWeight: 700, marginBottom: "2.5rem" }}>What I'm building with AI</h2>
           <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}>

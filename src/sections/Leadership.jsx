@@ -2,9 +2,9 @@ import { useState } from "react";
 import InteractiveBook from "../components/InteractiveBook";
 
 const T = {
-  bg: "#080b10", card: "#0d1420", border: "#1e2d3d", border2: "#243447",
-  txt: "#e8f4f8", txt2: "#7a9bb5", txt3: "#3d566e",
-  teal: "#00d4b8", violet: "#6c63ff", blue: "#0ea5e9", green: "#10b981",
+  bg: "#160f08", card: "#1c130a", border: "#3a2a18", border2: "#4a3320",
+  txt: "#f5ead8", txt2: "#b89a72", txt3: "#6b5238",
+  teal: "#e8a44a", violet: "#c97b3a", blue: "#d4884a", green: "#10b981",
 };
 
 const ROLES = [
@@ -52,6 +52,8 @@ const IMPACT = [
 // ── BOOK COVER (inline SVG, no external asset needed) ──────────
 // Clean, warm cover — deep navy field, a thin gold frame, and elegant
 // serif type. No glow/neon effects, just a calm, book-like look.
+// Kept as its own distinct navy-and-gold journal aesthetic rather than
+// the site's amber theme — this is intentional; it's a book, not a page.
 const COVER_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="500" height="700" viewBox="0 0 500 700">
   <defs>
@@ -280,7 +282,7 @@ export default function Leadership() {
           <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal, marginBottom: "1rem", display: "block" }}>
             Portfolio · Leadership
           </span>
-          <h1 style={{ color: "#f0f9ff", fontSize: "clamp(3rem, 7vw, 5rem)", fontWeight: 800, margin: 0 }}>Leadership</h1>
+          <h1 style={{ color: "#f5ead8", fontSize: "clamp(3rem, 7vw, 5rem)", fontWeight: 800, margin: 0 }}>Leadership</h1>
           <p style={{ color: `${T.txt2}99`, fontSize: "1rem", marginTop: "1rem" }}>
             Building community · shipping platforms · leading teams
           </p>
@@ -303,7 +305,7 @@ export default function Leadership() {
             <span style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal }}>
               By the numbers
             </span>
-            <h2 style={{ color: "#f0f9ff", fontSize: "1.9rem", fontWeight: 700, margin: "0.5rem 0 0" }}>Impact</h2>
+            <h2 style={{ color: "#f5ead8", fontSize: "1.9rem", fontWeight: 700, margin: "0.5rem 0 0" }}>Impact</h2>
           </div>
           <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
             {IMPACT.map((s) => (

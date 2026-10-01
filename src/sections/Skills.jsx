@@ -4,16 +4,16 @@ import Reveal from "./Reveal";
 
 // ── THEME ───────────────────────────────────────────────────────
 const T = {
-  bg: "#080b10", card: "#0d1420", border: "#1e2d3d", border2: "#243447",
-  txt: "#e8f4f8", txt2: "#7a9bb5", txt3: "#3d566e",
-  teal: "#00d4b8", violet: "#6c63ff",
+  bg: "#160f08", card: "#1c130a", border: "#3a2a18", border2: "#4a3320",
+  txt: "#f5ead8", txt2: "#b89a72", txt3: "#6b5238",
+  teal: "#e8a44a", violet: "#c97b3a",
 };
 
 // ── DATA ────────────────────────────────────────────────────────
 const GROUPS = [
   { title: "⚛ Frontend", color: T.teal, skills: ["React", "JavaScript", "TypeScript", "Tailwind CSS", "HTML5", "CSS3"] },
   { title: "🛠 Backend", color: T.violet, skills: ["Node.js", "Express.js", "REST APIs", "JWT", "FastAPI"] },
-  { title: "🗄 Database", color: "#0ea5e9", skills: ["MongoDB", "MySQL", "Mongoose", "FAISS"] },
+  { title: "🗄 Database", color: "#d4884a", skills: ["MongoDB", "MySQL", "Mongoose", "FAISS"] },
   { title: "🤖 AI / ML", color: "#10b981", skills: ["LangChain", "Ollama", "Prompt Engineering", "RAG", "Vector DBs"] },
   { title: "⚙ Tools", color: "#f59e0b", skills: ["Git", "GitHub", "VS Code", "Postman", "Linux"] },
 ];
@@ -21,7 +21,7 @@ const GROUPS = [
 const BARS = [
   { label: "React + JS", pct: 88, color: T.teal },
   { label: "Node.js / Express", pct: 80, color: T.violet },
-  { label: "Python", pct: 72, color: "#0ea5e9" },
+  { label: "Python", pct: 72, color: "#d4884a" },
   { label: "MongoDB / MySQL", pct: 75, color: "#10b981" },
   { label: "LangChain / AI", pct: 65, color: "#f59e0b" },
 ];
@@ -191,7 +191,7 @@ export default function Skills() {
           
           <div style={{ marginBottom: "2.5rem" }}>
             <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal, display: "block", marginBottom: "0.5rem" }}>Tech Stack</span>
-            <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 800, color: "#f0f9ff", letterSpacing: "-0.03em", margin: 0 }}>What I work with</h2>
+            <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 800, color: "#f5ead8", letterSpacing: "-0.03em", margin: 0 }}>What I work with</h2>
           </div>
 
           <nav role="tablist" style={{ display: "flex", borderBottom: `1px solid ${T.border}`, marginBottom: 0, overflowX: "auto" }}>

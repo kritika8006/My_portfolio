@@ -15,7 +15,7 @@ const NAV_META={
   Skills:     {icon:"📐",hint:"Checking the bookshelf…",color:"#c8a87a",label:"Skills"},
   Leadership: {icon:"📌",hint:"Walking to the board…",  color:"#d4884a",label:"Leadership"},
   About:      {icon:"🖥", hint:"Heading to the desk…",  color:"#b8c8a8",label:"About"},
-  Contact:    {icon:"✉️",hint:"Going to the shelf…",    color:"#c8a8d8",label:"Contact"},
+  Contact:    {icon:"✉️",hint:"Going to the shelf…",    color:"#d4a24c",label:"Contact"},
 };
 
 function mkMat(c){return new THREE.MeshStandardMaterial({color:c,roughness:0.78,metalness:0.02});}
@@ -96,8 +96,8 @@ function buildRoom(scene){
   [-1.5,0,1.5].forEach(i=>scene.add(box(8.6,0.032,0.1,"#a84030",0,0.031,1.5+i*1.8)));
   [-3.5,3.5].forEach(i=>scene.add(box(0.1,0.032,6.1,"#a84030",0+i*3.5,0.031,1.5)));
   // Couch rug
-  scene.add(box(7,0.025,5,"#2a3a5a", 9,0.013,6));
-  [-2,0,2].forEach(i=>scene.add(box(6.6,0.027,0.08,"#3a4a6a",9,0.027,6+i*1.6)));
+  scene.add(box(7,0.025,5,"#6b3d24", 9,0.013,6));
+  [-2,0,2].forEach(i=>scene.add(box(6.6,0.027,0.08,"#8b5a30",9,0.027,6+i*1.6)));
 
   // ── CEILING PENDANTS ─────────────────────────
   scene.add(cyl(0.5,0.65,0.18,LAMP_SH, -1,14.5,-8,12));
@@ -134,8 +134,8 @@ function buildRoom(scene){
   scene.add(box(0.06,0.075,0.28,"#334155",1.9,2.27,-0.62));
   // trinkets
   scene.add(sph(0.12,"#f4a55a",-1.2,2.32,-0.9));
-  scene.add(box(0.22,0.28,0.06,"#1d4ed8",-1.6,2.24,-1.0));
-  scene.add(box(0.18,0.22,0.06,"#7c3aed",-1.38,2.21,-1.0));
+  scene.add(box(0.22,0.28,0.06,"#b8621a",-1.6,2.24,-1.0));
+  scene.add(box(0.18,0.22,0.06,"#8b4a2a",-1.38,2.21,-1.0));
   scene.add(box(0.08,0.06,0.06,"#fbbf24",-1.0,2.24,-0.92));
 
   // ── DESK LAMP ────────────────────────────────
@@ -192,10 +192,10 @@ function buildRoom(scene){
   // TV screen mounted on left wall face (screen faces +Z / into room)
   scene.add(box(4.8,2.8,0.12,"#0f172a", TVX,2.86,BW+0.18));
   scene.add(box(4.5,2.55,0.06,"#0d1a2e", TVX,2.86,BW+0.22));
-  scene.add(box(4.5,0.04,0.03,"#2563eb", TVX,4.22,BW+0.23));
-  scene.add(box(4.5,0.04,0.03,"#2563eb", TVX,1.53,BW+0.23));
+  scene.add(box(4.5,0.04,0.03,ORANGE, TVX,4.22,BW+0.23));
+  scene.add(box(4.5,0.04,0.03,ORANGE, TVX,1.53,BW+0.23));
   // items on unit
-  scene.add(cylF(0.14,0.11,0.38,"#7c3aed",TVX-2.2,0.72,TVZ-0.1));
+  scene.add(cylF(0.14,0.11,0.38,"#b8621a",TVX-2.2,0.72,TVZ-0.1));
   scene.add(cylF(0.04,0.04,0.55,PLANT_DG,TVX-2.2,0.72+0.38,TVZ-0.1));
   scene.add(box(0.22,0.33,0.22,PLANT_G, TVX-2.2,0.72+0.38+0.27+0.05,TVZ-0.1));
   scene.add(box(0.7,0.06,0.45,"#1e293b",TVX+2.0,0.75,TVZ-0.1));
@@ -204,15 +204,15 @@ function buildRoom(scene){
 
   // ── COUCH (right-centre area) ────────────────
   const CX=9, CZ=6;
-  scene.add(box(7.5,0.6,3.0,"#2c1f3a", CX,0.3,CZ));
-  ["#3d2952","#3d2952","#3d2952"].forEach((c,i)=>
+  scene.add(box(7.5,0.6,3.0,"#4a2e22", CX,0.3,CZ));
+  ["#6b4436","#6b4436","#6b4436"].forEach((c,i)=>
     scene.add(box(2.2,0.38,2.7,c, CX-2.25+i*2.25,0.79,CZ)));
-  scene.add(box(7.5,1.8,0.55,"#2c1f3a", CX,1.5,CZ-1.4));
-  scene.add(box(7.2,1.55,0.42,"#3d2952", CX,1.55,CZ-1.36));
-  scene.add(box(0.55,1.2,3.0,"#2c1f3a", CX-3.78,0.9,CZ));
-  scene.add(box(0.55,1.2,3.0,"#2c1f3a", CX+3.78,0.9,CZ));
+  scene.add(box(7.5,1.8,0.55,"#4a2e22", CX,1.5,CZ-1.4));
+  scene.add(box(7.2,1.55,0.42,"#6b4436", CX,1.55,CZ-1.36));
+  scene.add(box(0.55,1.2,3.0,"#4a2e22", CX-3.78,0.9,CZ));
+  scene.add(box(0.55,1.2,3.0,"#4a2e22", CX+3.78,0.9,CZ));
   scene.add(box(0.9,0.55,0.9,ORANGE, CX-2.8,1.25,CZ-0.5,0,0,0.18));
-  scene.add(box(0.85,0.5,0.85,"#c8a8d8",CX+2.5,1.22,CZ-0.5,0,0,-0.12));
+  scene.add(box(0.85,0.5,0.85,"#d4915a",CX+2.5,1.22,CZ-0.5,0,0,-0.12));
   [[-3.3,-1.2],[-3.3,1.2],[3.3,-1.2],[3.3,1.2]].forEach(([dx,dz])=>
     scene.add(box(0.14,0.22,0.14,WOOD_D, CX+dx,0.11,CZ+dz)));
 
@@ -247,7 +247,7 @@ function buildRoom(scene){
   });
   scene.add(box(0.9,0.06,0.7,"#f1f5f9", FCX,3.63,FCZ));
   scene.add(box(0.32,0.42,0.06,"#dc2626",FCX-0.3,3.84,FCZ-0.1));
-  scene.add(box(0.28,0.35,0.06,"#1d4ed8",FCX-0.02,3.81,FCZ-0.1));
+  scene.add(box(0.28,0.35,0.06,"#b8621a",FCX-0.02,3.81,FCZ-0.1));
 
   // ── WARDROBE → Projects (back-right corner, against right wall) ─
   // Right wall inner face = +17.86. Wardrobe depth 2.2, half=1.1 → centre Z=-1.1 from wall.
@@ -337,7 +337,7 @@ function buildRoom(scene){
   scene.add(box(0.12,2.1,0.85,WOOD_D, 4.05,6.5,WSZ));
   scene.add(box(0.12,2.1,0.85,WOOD_D, 7.95,6.5,WSZ));
   scene.add(cylF(0.18,0.14,0.6,"#64748b",4.7,7.5+0.07,WSZ));
-  scene.add(box(0.8,1.05,0.18,"#1d4ed8",6,8.04,WSZ));
+  scene.add(box(0.8,1.05,0.18,"#b8621a",6,8.04,WSZ));
   scene.add(cylF(0.12,0.12,0.45,"#d97706",7.3,5.5+0.07,WSZ));
   scene.add(box(0.32,0.6,0.06,"#1e293b",4.7,6.3,WSZ+0.04));
   scene.add(box(0.24,0.44,0.04,SCREEN,  4.7,6.3,WSZ+0.06));
@@ -362,17 +362,17 @@ function buildRoom(scene){
   // ── WALL ART above desk (back wall) ──────────
   scene.add(box(2.8,2.0,0.07,"#1a0f07", 3.5,7.5,BW+0.04));
   scene.add(box(2.55,1.75,0.05,"#111827",3.5,7.5,BW+0.08));
-  [ORANGE,"#7c3aed","#0ea5e9","#10b981"].forEach((c,i)=>
+  [ORANGE,"#c97b3a","#8b4a2a","#d4a24c"].forEach((c,i)=>
     scene.add(box(0.5,0.7+i*0.2,0.04,c, 2.35+i*0.72,7.5,BW+0.11)));
 
   // ── GALLERY WALL (back wall, far left) ───────
   scene.add(box(2.2,1.6,0.07,"#1a0f07",-14,8.5,BW+0.04));
   scene.add(box(1.96,1.38,0.05,"#0f172a",-14,8.5,BW+0.08));
-  scene.add(cyl(0.32,0.32,0.04,"#7c3aed",-14,8.5,BW+0.12,32));
+  scene.add(cyl(0.32,0.32,0.04,"#d4a24c",-14,8.5,BW+0.12,32));
   scene.add(cyl(0.18,0.18,0.04,ORANGE,   -14,8.5,BW+0.14,32));
   // framed photo centre
   scene.add(box(1.8,1.4,0.07,"#1a120b",0,6.5,BW+0.04));
-  scene.add(box(1.6,1.2,0.05,"#dbeafe",0,6.5,BW+0.08));
+  scene.add(box(1.6,1.2,0.05,"#e8d4b0",0,6.5,BW+0.08));
 
   // ── FLOOR LAMP (back-left corner) ────────────
   scene.add(cylF(0.1,0.16,0.14,LAMP_BS,-14,FLOOR_TOP,-14));
@@ -386,10 +386,10 @@ function buildRoom(scene){
 
   // ── WINDOW (back wall) ───────────────────────
   scene.add(box(3.5,4.0,0.12,"#1e293b",-10,7.5,BW+0.07));
-  scene.add(box(3.1,3.6,0.05,"#bfdbfe",-10,7.5,BW+0.14));
+  scene.add(box(3.1,3.6,0.05,"#f0c890",-10,7.5,BW+0.14));
   scene.add(box(0.14,3.6,0.06,"#1e293b",-10,7.5,BW+0.18));
   scene.add(box(3.1,0.14,0.06,"#1e293b",-10,7.5,BW+0.18));
-  const wl=new THREE.RectAreaLight("#c8d8f8",3.5,3.0,3.5);
+  const wl=new THREE.RectAreaLight("#f4d9a8",3.5,3.0,3.5);
   wl.position.set(-10,7.5,-17);wl.lookAt(-10,7.5,0);scene.add(wl);
   // sill
   scene.add(box(3.8,0.1,0.6,"#1a120b",-10,5.55,BW+0.5));
@@ -397,8 +397,8 @@ function buildRoom(scene){
   scene.add(cylF(0.1,0.08,0.28,POT,-11.0,5.6,BW+0.45));
 
   // ── SMALL RUGS ───────────────────────────────
-  scene.add(box(4.5,0.025,3.5,"#4a1942",-12,0.013,-9));
-  scene.add(box(4.5,0.025,3.5,"#2a2a4a", 13,0.013,-9));
+  scene.add(box(4.5,0.025,3.5,"#5c2818",-12,0.013,-9));
+  scene.add(box(4.5,0.025,3.5,"#3a2a18", 13,0.013,-9));
 
   // ── BASEBOARD HEATER (back wall) ─────────────
   scene.add(box(12,0.28,0.14,"#2a1e14",-2,0.14,BW+0.1));
@@ -475,7 +475,7 @@ export default function Portfolio({onNavigate}){
     pl("#fff8e1",2.4,-14,6.5,-14); // floor lamp
     pl("#ffcca0",1.8,0,8,0);       // room fill
     pl("#ffddb0",2.2,9,5.5,6);     // couch area
-    pl("#c8d8ff",1.6,-13,4,1.5);   // TV area
+    pl("#ffddb0",1.6,-13,4,1.5);   // TV area
     pl("#fff8e8",2.0,-1,9,-8);     // pendant 1
     pl("#fff0d0",1.6,7,9,5);       // pendant 2
     pl("#ffeedd",2.0,16,5,4);      // bookshelf area
@@ -663,9 +663,9 @@ export default function Portfolio({onNavigate}){
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:3}}>
           <span style={{color:"rgba(255,210,130,0.85)",fontWeight:600,fontSize:13,letterSpacing:"-0.01em",lineHeight:1}}>Kritika Joshi</span>
-          <span style={{color:"rgba(190,140,70,0.32)",fontWeight:400,fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase"}}>
+          <span style={{color:"rgba(230,175,110,0.85)",fontWeight:400,fontSize:9,letterSpacing:"0.18em",textTransform:"uppercase"}}>
             {activeSection
-              ?<span onClick={handleHome} style={{cursor:"pointer",color:"rgba(200,150,80,0.5)"}}>← back to workshop</span>
+              ?<span onClick={handleHome} style={{cursor:"pointer",color:"rgba(230,175,110,0.85)"}}>← back to workshop</span>
               :"Digital Workshop"}
           </span>
         </div>
@@ -682,7 +682,10 @@ export default function Portfolio({onNavigate}){
             Kritika's<br/>
             <span style={{fontWeight:300,color:"rgba(195,138,60,0.48)",fontSize:"0.66em",letterSpacing:"-0.01em"}}>Digital Workshop</span>
           </h1>
-          <p style={{margin:0,color:"rgba(170,112,45,0.25)",fontSize:9.5,letterSpacing:"0.1em",fontWeight:400}}>Drag · Scroll · Arrow keys</p>
+          <p style={{margin:"2px 0 8px",color:"rgba(215,168,90,0.55)",fontSize:11,letterSpacing:"0.04em",fontWeight:500}}>
+            Full-Stack Developer · React · Node.js · AI Applications
+          </p>
+          <p style={{margin:0,color:"rgba(230,175,110,0.65)",fontSize:9.5,letterSpacing:"0.1em",fontWeight:400}}>Drag · Scroll · Arrow keys</p>
         </div>
       )}
 

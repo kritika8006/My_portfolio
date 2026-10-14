@@ -83,6 +83,9 @@ export default function Contact() {
   const stickyRef = useRef(null);
   const reachRef = useRef(null);
   const flipRef = useRef(null);
+  const markersRef = useRef([]);       // invisible scroll targets, one per chapter
+  const lastScrollStep = useRef(0);    // ← NEW: the chapter the scroll position last pointed at
+  const navLock = useRef(false);       // ← NEW: true while a dot-click scroll is animating
   const [step, setStep] = useState(0);
   const [phase, setPhase] = useState("reach"); // reach | flip | reveal
   const [emailState, setEmailState] = useState("idle");
@@ -111,6 +114,9 @@ export default function Contact() {
   }, []);
 
   // scroll → which chapter is active
+  // ← CHANGED: only reacts when the scroll position moves to a DIFFERENT chapter,
+  // and is ignored while a dot-click is in progress. So a dot click can never be
+  // overwritten by a stale scroll position.
   useEffect(() => {
     const onScroll = () => {
       const el = containerRef.current;
@@ -121,7 +127,10 @@ export default function Contact() {
       const progress = total > 0 ? Math.min(1, Math.max(0, scrolled / total)) : 0;
       let s = Math.floor(progress * CHAPTERS.length);
       if (s >= CHAPTERS.length) s = CHAPTERS.length - 1;
-      setStep(s);
+      if (s !== lastScrollStep.current) {
+        lastScrollStep.current = s;
+        if (!navLock.current) setStep(s);
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -242,12 +251,14 @@ export default function Contact() {
     timers.current.push(setTimeout(() => setEmailState("idle"), 3000));
   };
 
+  // ← CHANGED: switches the chapter immediately (so the click always works),
+  // THEN scrolls the page to match. The lock stops the scroll handler from
+  // flipping through the in-between chapters while the smooth scroll runs.
   const goTo = (i) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const total = el.getBoundingClientRect().height - window.innerHeight;
-    const targetY = window.scrollY + el.getBoundingClientRect().top + (total * (i + 0.5)) / CHAPTERS.length;
-    window.scrollTo({ top: targetY, behavior: "smooth" });
+    navLock.current = true;
+    timers.current.push(setTimeout(() => { navLock.current = false; }, 1200));
+    setStep(i);
+    markersRef.current[i]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -319,6 +330,20 @@ export default function Contact() {
 `}</style>
 
       <div ref={containerRef} style={{ height: "300vh", position: "relative" }}>
+        {/* invisible scroll targets, one per chapter (middle of each chapter's range) */}
+        {CHAPTERS.map((c, i) => (
+          <div
+            key={c.label}
+            ref={(el) => (markersRef.current[i] = el)}
+            aria-hidden="true"
+            style={{
+              position: "absolute", left: 0, width: 1, height: 1,
+              top: `${(200 * (i + 0.5)) / CHAPTERS.length}vh`,
+              pointerEvents: "none",
+            }}
+          />
+        ))}
+
         <div ref={stickyRef} style={{
           position: "sticky", top: 0, height: "100vh", width: "100%", overflow: "hidden",
           background: stacked ? "#14100a" : undefined,
@@ -363,6 +388,7 @@ export default function Contact() {
     textAlign: "center",
     padding: stacked ? "1.25rem 1rem 0.5rem" : "0.6rem 2rem 1rem",
     animation: "fadeUp .7s ease both",
+    pointerEvents: "none",
   }}
 >
   <span
@@ -519,22 +545,24 @@ export default function Contact() {
             </div>
           )}
 
+          {/* dots — z-index 10 and bigger click targets */}
           <div style={{
-            position: "absolute", left: 0, right: 0, bottom: "4%", zIndex: 2,
+            position: "absolute", left: 0, right: 0, bottom: "4%", zIndex: 10,
             display: "flex", justifyContent: "center",
           }}>
-            <div style={{ display: "flex", gap: 10, background: "rgba(20,14,6,0.45)", borderRadius: 999, padding: "0.5rem 0.8rem" }}>
+            <div style={{ display: "flex", gap: 12, background: "rgba(20,14,6,0.45)", borderRadius: 999, padding: "0.55rem 0.9rem" }}>
               {CHAPTERS.map((c, i) => (
                 <button
                   key={c.label}
                   type="button"
                   onClick={() => goTo(i)}
                   aria-label={`Go to ${c.label}`}
+                  title={c.label}
                   style={{
-                    // bigger tap target than the visible dot, for touch screens
-                    width: 12, height: 12, borderRadius: "50%", border: "none", cursor: "pointer", padding: 0,
-                    background: i === step ? c.accent : "rgba(255,255,255,0.55)",
-                    transition: "background .3s ease",
+                    width: 14, height: 14, borderRadius: "50%", border: "none", cursor: "pointer", padding: 0,
+                    background: i === step ? "#f97316" : "rgba(255,255,255,0.65)",
+                    transform: i === step ? "scale(1.25)" : "scale(1)",
+                    transition: "background .3s ease, transform .3s ease",
                   }}
                 />
               ))}

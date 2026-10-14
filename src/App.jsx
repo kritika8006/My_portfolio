@@ -53,8 +53,8 @@ export default function App() {
   return (
     <>
       {/* Responsive helpers for the top bar (inline styles can't do media queries) */}
-      <style>{`
-        html, body { overflow-x: hidden; }
+            <style>{`
+        html { overflow-x: hidden; }
         img, video, canvas { max-width: 100%; }
         @media (max-width: 640px) {
           .nav-label { display: none; }
@@ -65,7 +65,7 @@ export default function App() {
           .kj-logo { display: none !important; }
         }
       `}</style>
-
+      
       {/* ── 3D ROOM ───────────────────────────────────── */}
       {!isFullPage && (
         <Portfolio onNavigate={handleNavigate} />

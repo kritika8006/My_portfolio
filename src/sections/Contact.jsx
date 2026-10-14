@@ -212,6 +212,26 @@ export default function Contact() {
 
   const chapter = CHAPTERS[step];
   const isEmail = chapter.kind === "email";
+
+  // ── Responsive layout ────────────────────────────────────────────
+  // On portrait screens (phones, portrait tablets) objectFit:"cover" would crop
+  // the 16:9 video down to a thin centre strip and push the logo/text overlays
+  // off-screen. So below ~0.95 aspect ratio we switch to a "stacked" layout:
+  // the video sits in a 16:9 box (no cropping) and the chapter details render
+  // in a card underneath instead of on top of the book pages.
+  const stacked = stageSize.w > 0 && stageSize.w / stageSize.h < 0.95;
+  const vidH = (stageSize.w * 9) / 16;
+  const vidTop = Math.max(150, stageSize.h * 0.2);
+
+  const videoBox = stacked
+    ? { position: "absolute", left: 0, top: vidTop, width: "100%", height: vidH, objectFit: "cover" }
+    : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" };
+
+  // Overlay sizing scales with how big the video is actually rendered.
+  const scale = Math.max(stageSize.w / VIDEO_W, stageSize.h / VIDEO_H) || 1;
+  const logoW = Math.round(Math.min(150, Math.max(56, 110 * scale)));
+  const textW = Math.round(Math.min(300, Math.max(120, 240 * scale)));
+
   const logoPos = coverFractionToPercent(LOGO_FRAC, stageSize.w, stageSize.h);
   const textPos = coverFractionToPercent(TEXT_FRAC, stageSize.w, stageSize.h);
 
@@ -231,8 +251,8 @@ export default function Contact() {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, color: T.txt2 }}>
-     <style>{`
+<div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, color: T.txt2 }}>
+       <style>{`
   @keyframes fadeUp {
     from { opacity:0; transform:translateY(16px); }
     to { opacity:1; transform:translateY(0); }
@@ -241,6 +261,13 @@ export default function Contact() {
   @keyframes cardIn {
     from { opacity:0; transform:translateY(14px) scale(.97); }
     to { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* cardIn above animates transform, which would override the centring
+     transform on the stacked card, so it gets its own fade-only animation */
+  @keyframes fadeOnly {
+    from { opacity:0; }
+    to { opacity:1; }
   }
 
   @keyframes inkReveal {
@@ -269,6 +296,11 @@ export default function Contact() {
     animation: inkReveal 2.8s cubic-bezier(.22,1,.36,1) forwards;
   }
 
+  /* the long heading can't stay on one line on narrow screens */
+  @media (max-width: 720px) {
+    .ink-title { white-space: normal; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * {
       transition-duration: .01ms !important;
@@ -277,7 +309,7 @@ export default function Contact() {
   }
 
   .cta-link {
-    transition: opacity .2 ease, text-decoration-thickness .2s ease;
+    transition: opacity .2s ease, text-decoration-thickness .2s ease;
   }
 
   .cta-link:hover {
@@ -287,7 +319,10 @@ export default function Contact() {
 `}</style>
 
       <div ref={containerRef} style={{ height: "300vh", position: "relative" }}>
-        <div ref={stickyRef} style={{ position: "sticky", top: 0, height: "100vh", width: "100%", overflow: "hidden" }}>
+        <div ref={stickyRef} style={{
+          position: "sticky", top: 0, height: "100vh", width: "100%", overflow: "hidden",
+          background: stacked ? "#14100a" : undefined,
+        }}>
 
           <video
             ref={reachRef}
@@ -297,7 +332,7 @@ export default function Contact() {
             muted
             playsInline
             style={{
-              position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              ...videoBox,
               opacity: phase === "reach" ? 1 : 0, transition: "opacity .6s ease",
             }}
           />
@@ -309,7 +344,7 @@ export default function Contact() {
             muted
             playsInline
             style={{
-              position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              ...videoBox,
               opacity: phase === "flip" || phase === "reveal" ? 1 : 0, transition: "opacity .6s ease",
             }}
           />
@@ -326,7 +361,7 @@ export default function Contact() {
     position: "relative",
     zIndex: 1,
     textAlign: "center",
-    padding: "0.6rem 2rem 1rem",
+    padding: stacked ? "1.25rem 1rem 0.5rem" : "0.6rem 2rem 1rem",
     animation: "fadeUp .7s ease both",
   }}
 >
@@ -336,11 +371,11 @@ export default function Contact() {
       marginBottom: "0.5rem",
       transform: "translateY(-10px)",
 
-      fontSize: "0.95rem",
+      fontSize: "clamp(0.7rem, 2.4vw, 0.95rem)",
       fontWeight: 800,
       letterSpacing: "0.22em",
       textTransform: "uppercase",
-color: "#8b7355",
+      color: stacked ? "#c9b48a" : "#8b7355",
       fontFamily: "'Poppins', sans-serif",
 
       textShadow: `
@@ -357,14 +392,16 @@ color: "#8b7355",
     className={phase === "reveal" ? "ink-title" : ""}
     style={{
       display: "inline-block",
+      maxWidth: "100%",
 
       color: "#F5F1E8",
-      fontSize: "clamp(2.3rem,4.8vw,3.6rem)",
+      fontSize: "clamp(1.7rem,4.8vw,3.6rem)",
       fontWeight: 900,
       fontFamily: "'Playfair Display', serif",
       letterSpacing: "-0.03em",
+      lineHeight: 1.15,
 
-      margin: "-1.4rem auto 0",
+      margin: stacked ? "-0.6rem auto 0" : "-1.4rem auto 0",
 
       textShadow: `
   0 1px 1px rgba(255,255,255,.08),
@@ -376,7 +413,7 @@ color: "#8b7355",
   </h1>
 </div>
 
-          {phase === "reveal" && (
+          {phase === "reveal" && !stacked && (
             <div key={step}>
               {/*
                 Positions are computed at runtime (see coverFractionToPercent
@@ -397,7 +434,7 @@ color: "#8b7355",
                 <img
                   src={chapter.logo}
                   alt={`${chapter.label} logo`}
-                  style={{ width: 110, height: "auto", display: "block", mixBlendMode: "multiply", opacity: 0.9 }}
+                  style={{ width: logoW, height: "auto", display: "block", mixBlendMode: "multiply", opacity: 0.9 }}
                 />
               </div>
 
@@ -405,12 +442,12 @@ color: "#8b7355",
               <div style={{
                 position: "absolute", left: textPos.left, top: textPos.top, transform: "translate(-50%,-50%)",
                 zIndex: 2, textAlign: "center", animation: "cardIn .6s cubic-bezier(.16,1,.3,1) both .1s",
-                width: "min(19%, 240px)",
+                width: textW,
               }}>
-                <div style={{ color: "#1f1710", fontWeight: 600, fontSize: "clamp(1.1rem,2.2vw,1.6rem)", marginBottom: 4, fontFamily: "Georgia, serif", letterSpacing: "0.01em", mixBlendMode: "multiply" }}>
+                <div style={{ color: "#1f1710", fontWeight: 600, fontSize: "clamp(0.95rem,2.2vw,1.6rem)", marginBottom: 4, fontFamily: "Georgia, serif", letterSpacing: "0.01em", mixBlendMode: "multiply" }}>
                   {chapter.label}
                 </div>
-                <div style={{ color: "#4a3f2e", fontSize: "clamp(0.72rem,1.2vw,0.88rem)", marginBottom: 10, fontFamily: "Georgia, serif", mixBlendMode: "multiply", wordBreak: "break-word" }}>
+                <div style={{ color: "#4a3f2e", fontSize: "clamp(0.62rem,1.2vw,0.88rem)", marginBottom: 10, fontFamily: "Georgia, serif", mixBlendMode: "multiply", wordBreak: "break-word" }}>
                   {isEmail && emailState === "sent" ? "Sent ✓ — check your mail app" : chapter.value}
                 </div>
                 <a
@@ -420,7 +457,59 @@ color: "#8b7355",
                   onClick={isEmail ? handleEmailAction : undefined}
                   className="cta-link"
                   style={{
-                    fontSize: "0.9rem", fontWeight: 700, color: chapter.accent,
+                    fontSize: "clamp(0.72rem,1.2vw,0.9rem)", fontWeight: 700, color: chapter.accent,
+                    textDecoration: "underline", textUnderlineOffset: 4, textDecorationThickness: 2,
+                  }}
+                >
+                  {isEmail ? "Send an email" : `Open ${chapter.label} →`}
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Stacked (portrait) layout — details card sits below the video */}
+          {phase === "reveal" && stacked && (
+            <div
+              key={step}
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: vidTop + vidH + 20,
+                transform: "translateX(-50%)",
+                width: "min(90%, 380px)",
+                boxSizing: "border-box",
+                zIndex: 2,
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                padding: "16px 18px",
+                borderRadius: 16,
+                background: "rgba(245,241,232,0.96)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+                animation: "fadeOnly .5s ease both",
+              }}
+            >
+              <img
+                src={chapter.logo}
+                alt={`${chapter.label} logo`}
+                style={{ width: 56, height: 56, objectFit: "contain", flexShrink: 0 }}
+              />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ color: "#1f1710", fontWeight: 600, fontSize: "1.1rem", fontFamily: "Georgia, serif" }}>
+                  {chapter.label}
+                </div>
+                <div style={{ color: "#4a3f2e", fontSize: "0.8rem", fontFamily: "Georgia, serif", margin: "2px 0 8px", overflowWrap: "anywhere" }}>
+                  {isEmail && emailState === "sent" ? "Sent ✓ — check your mail app" : chapter.value}
+                </div>
+                <a
+                  href={chapter.href}
+                  target={isEmail ? undefined : "_blank"}
+                  rel="noreferrer"
+                  onClick={isEmail ? handleEmailAction : undefined}
+                  className="cta-link"
+                  style={{
+                    display: "inline-block", padding: "4px 0",
+                    fontSize: "0.88rem", fontWeight: 700, color: chapter.accent,
                     textDecoration: "underline", textUnderlineOffset: 4, textDecorationThickness: 2,
                   }}
                 >
@@ -442,7 +531,8 @@ color: "#8b7355",
                   onClick={() => goTo(i)}
                   aria-label={`Go to ${c.label}`}
                   style={{
-                    width: 9, height: 9, borderRadius: "50%", border: "none", cursor: "pointer",
+                    // bigger tap target than the visible dot, for touch screens
+                    width: 12, height: 12, borderRadius: "50%", border: "none", cursor: "pointer", padding: 0,
                     background: i === step ? c.accent : "rgba(255,255,255,0.55)",
                     transition: "background .3s ease",
                   }}

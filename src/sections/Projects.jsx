@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Reveal from "./Reveal";
 import { eyebrow } from "./tokens";
 import { CylinderCarousel } from "../components/CylindricalCarousel";
+import { useViewportWidth } from "../hooks/useViewport";
 
 // ─── Design tokens ───────────────────────────────────────────────
 const T = {
@@ -82,7 +83,8 @@ const PROJECTS = [
     description:
       "A full-stack inventory system for library management with role-based access control — separate admin and user portals for secure book tracking, issue management, and reporting.",
     tags: ["MongoDB", "Express", "React", "Node.js", "JWT"],
-    github: "github.com/kritika8006/OptiReserveClient",
+    // was missing "https://", which made the browser treat it as a relative link
+    github: "https://github.com/kritika8006/OptiReserveClient",
     color: "#f59e0b",
   },
   {
@@ -164,7 +166,7 @@ function AITerminal() {
   }, [shown]);
 
   return (
-    <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: `1px solid ${T.border2}` }}>
+    <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: `1px solid ${T.border2}`, minWidth: 0 }}>
       <div style={{
         background: T.card, padding: "10px 16px", display: "flex", alignItems: "center", gap: 6,
         borderBottom: `1px solid ${T.border}`,
@@ -174,11 +176,12 @@ function AITerminal() {
         ))}
       </div>
       <div style={{
-        background: "#0e0904", padding: "20px 24px", fontFamily: "'JetBrains Mono','Fira Code',monospace",
-        fontSize: "13px", lineHeight: 2, minHeight: 220,
+        background: "#0e0904", padding: "20px clamp(14px, 4vw, 24px)", fontFamily: "'JetBrains Mono','Fira Code',monospace",
+        fontSize: "clamp(11px, 3vw, 13px)", lineHeight: 2, minHeight: 220,
       }}>
         {AI_LINES.slice(0, shown).map((l, i) => (
-          <p key={i} style={{ margin: 0, color: l.c }}>{l.t}</p>
+          // overflowWrap keeps long lines inside the box on narrow screens
+          <p key={i} style={{ margin: 0, color: l.c, overflowWrap: "anywhere" }}>{l.t}</p>
         ))}
       </div>
     </div>
@@ -216,7 +219,7 @@ function ProjectCard({ project, onSelect }) {
       </div>
       <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: ac, marginRight: 8 }} />
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: ac, marginRight: 8, flexShrink: 0 }} />
           <span style={{ fontSize: 14, fontWeight: 600, color: T.txt }}>{project.title}</span>
         </div>
         <p style={{ fontSize: 12, color: T.txt2, lineHeight: 1.65, flex: 1, margin: "0 0 12px" }}>{project.description}</p>
@@ -228,7 +231,14 @@ function ProjectCard({ project, onSelect }) {
             }}>{t}</span>
           ))}
         </div>
-        <a href={project.github} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, fontWeight: 600, color: T.teal, textDecoration: "none" }}>View on GitHub →</a>
+        {/* stopPropagation: tapping the link shouldn't also open the modal */}
+        <a
+          href={project.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          style={{ fontSize: 11, fontWeight: 600, color: T.teal, textDecoration: "none", padding: "6px 0", display: "inline-block" }}
+        >View on GitHub →</a>
       </div>
     </div>
   );
@@ -239,31 +249,38 @@ function ProjectCard({ project, onSelect }) {
 // ─────────────────────────────────────────────────────────────────
 export default function Projects({ setSelectedProject }) {
   const items = PROJECTS;
+  const vw = useViewportWidth();
+
+  // Carousel sizing steps with the viewport. Stepped (not continuous) so the
+  // carousel only remounts at breakpoints, not on every pixel of a resize.
+  const cardW = vw < 480 ? 280 : vw < 768 ? 420 : vw < 1100 ? 560 : 720;
+  const carouselH = vw < 480 ? 300 : vw < 768 ? 360 : vw < 1100 ? 420 : 480;
 
   const handleSelect = useCallback((project) => {
     if (setSelectedProject) setSelectedProject(project);
   }, [setSelectedProject]);
 
   return (
-    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt }}>
+    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt, overflowX: "hidden" }}>
       {/* ── HERO ── */}
-      <div style={{ padding: "60px 32px 0", borderBottom: `1px solid ${T.border}`, position: "relative" }}>
-        <h1 style={{ fontSize: "3rem", fontWeight: 700, margin: "0 0 40px" }}>Featured work</h1>
-        <div style={{ height: 480, width: "100%", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ padding: "clamp(32px,6vw,60px) clamp(16px,4vw,32px) 0", borderBottom: `1px solid ${T.border}`, position: "relative" }}>
+        <h1 style={{ fontSize: "clamp(2rem,6vw,3rem)", fontWeight: 700, margin: "0 0 clamp(24px,4vw,40px)" }}>Featured work</h1>
+        <div style={{ height: carouselH, width: "100%", borderTop: `1px solid ${T.border}`, overflow: "hidden" }}>
           <CylinderCarousel
+            key={cardW}
             images={SHOWCASE_IMAGES}
-            cardWidth={720}
+            cardWidth={cardW}
             animationDuration={40}
             radiusScale={1.2}
-            perspective="70em"
+            perspective={vw < 768 ? "40em" : "70em"}
           />
         </div>
       </div>
 
       {/* ── GRID ── */}
-      <div style={{ padding: "5rem 2.5rem", maxWidth: "76rem", margin: "0 auto" }}>
-        <h2 style={{ fontSize: "2.4rem", fontWeight: 700, marginBottom: "2.5rem" }}>All projects</h2>
-        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill,minmax(270px,1fr))" }}>
+      <div style={{ padding: "clamp(3rem,8vw,5rem) clamp(1rem,4vw,2.5rem)", maxWidth: "76rem", margin: "0 auto" }}>
+        <h2 style={{ fontSize: "clamp(1.7rem,5vw,2.4rem)", fontWeight: 700, marginBottom: "2.5rem" }}>All projects</h2>
+        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill,minmax(min(270px,100%),1fr))" }}>
           {items.map((p) => (
             <ProjectCard key={p.id} project={p} onSelect={handleSelect} />
           ))}
@@ -271,12 +288,12 @@ export default function Projects({ setSelectedProject }) {
       </div>
 
       {/* ── AI CORNER ── */}
-      <div style={{ background: "#100b05", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: "#100b05", padding: "clamp(3rem,8vw,5rem) clamp(1rem,4vw,2.5rem)", borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "76rem", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "2.4rem", fontWeight: 700, marginBottom: "2.5rem" }}>What I'm building with AI</h2>
-          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}>
+          <h2 style={{ fontSize: "clamp(1.7rem,5vw,2.4rem)", fontWeight: 700, marginBottom: "2.5rem" }}>What I'm building with AI</h2>
+          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))" }}>
             <AITerminal />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(150px,100%),1fr))", gap: "0.75rem" }}>
               {TECH_CARDS.map(item => (
                 <div key={item.title} style={{ background: T.card, border: `1px solid ${T.border}`, padding: "1rem", borderRadius: "0.75rem" }}>
                   <div style={{ fontSize: "1.3rem" }}>{item.icon}</div>

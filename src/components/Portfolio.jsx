@@ -421,16 +421,30 @@ const NAV_CONFIG={
   Contact:   {furniture:"wallshelf", walkTo:new THREE.Vector3(5,0,-13)},
 };
 
+// ── Responsive camera helpers ────────────────────────────────────
+// Portrait screens crop the sides of the room, so widen the FOV a little
+// and start the camera further back. Landscape is unchanged (fov 45, r 24).
+const getAspect = () =>
+  typeof window !== "undefined" && window.innerHeight ? window.innerWidth / window.innerHeight : 1.6;
+const baseRadiusFor = (a) => (a < 1 ? 24 + (1 - Math.max(a, 0.4)) * 16 : 24);
+const fovFor = (a) => (a < 1 ? 45 + (1 - Math.max(a, 0.4)) * 20 : 45);
+
 export default function Portfolio({onNavigate}){
   const mountRef=useRef(null);
   const avatarRef=useRef(null);
   const intRef=useRef({});
   const rafRef=useRef(null);
+  // Keep the latest onNavigate in a ref so the 3D scene is built ONCE.
+  // (Before, the scene was torn down and rebuilt every time App re-rendered.)
+  const onNavRef=useRef(onNavigate);
+  onNavRef.current=onNavigate;
+
+  const r0=baseRadiusFor(getAspect());
   const orbitRef=useRef({
-    theta:Math.PI*0.25,phi:Math.PI*0.30,radius:24,
+    theta:Math.PI*0.25,phi:Math.PI*0.30,radius:r0,
     target:new THREE.Vector3(0,2,0),
     dragging:false,lastX:0,lastY:0,
-    tTheta:Math.PI*0.25,tPhi:Math.PI*0.30,tRadius:24,
+    tTheta:Math.PI*0.25,tPhi:Math.PI*0.30,tRadius:r0,
     tTarget:new THREE.Vector3(0,2,0),
   });
   const walkRef=useRef({phase:"idle",from:new THREE.Vector3(),to:new THREE.Vector3(),t:0,furniture:null,section:null});
@@ -454,7 +468,7 @@ export default function Portfolio({onNavigate}){
     const scene=new THREE.Scene();
     scene.background=new THREE.Color("#1a0f07");
     scene.fog=new THREE.Fog("#1a0f07",45,72);
-    const camera=new THREE.PerspectiveCamera(45,W/H,0.1,140);
+    const camera=new THREE.PerspectiveCamera(fovFor(W/H),W/H,0.1,140);
 
     // Lighting
     scene.add(new THREE.AmbientLight("#ffe0b0",1.5));
@@ -486,13 +500,39 @@ export default function Portfolio({onNavigate}){
 
     const canvas=renderer.domElement;
     canvas.style.cursor="grab";
+    // stop the browser from scrolling/zooming the page while dragging the scene on touch screens
+    canvas.style.touchAction="none";
     const o=orbitRef.current;
+    const clampR=r=>Math.max(6,Math.min(40,r));
+
     const onMD=e=>{if(walkRef.current.phase!=="idle")return;o.dragging=true;o.lastX=e.clientX;o.lastY=e.clientY;canvas.style.cursor="grabbing";};
     const onMM=e=>{if(!o.dragging)return;o.tTheta-=(e.clientX-o.lastX)*0.007;o.tPhi=Math.max(0.1,Math.min(Math.PI*0.46,o.tPhi+(e.clientY-o.lastY)*0.006));o.lastX=e.clientX;o.lastY=e.clientY;};
     const onMU=()=>{o.dragging=false;canvas.style.cursor="grab";};
-    const onW=e=>{e.preventDefault();o.tRadius=Math.max(6,Math.min(40,o.tRadius+e.deltaY*0.04));};
-    const onTS=e=>{if(e.touches.length===1){o.dragging=true;o.lastX=e.touches[0].clientX;o.lastY=e.touches[0].clientY;}};
-    const onTM=e=>{if(!o.dragging||e.touches.length!==1)return;o.tTheta-=(e.touches[0].clientX-o.lastX)*0.007;o.tPhi=Math.max(0.1,Math.min(Math.PI*0.46,o.tPhi+(e.touches[0].clientY-o.lastY)*0.006));o.lastX=e.touches[0].clientX;o.lastY=e.touches[0].clientY;};
+    const onW=e=>{e.preventDefault();o.tRadius=clampR(o.tRadius+e.deltaY*0.04);};
+
+    // touch: one finger orbits, two fingers pinch-zoom
+    let pinch=0;
+    const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+    const onTS=e=>{
+      if(e.touches.length===1){
+        if(walkRef.current.phase!=="idle")return;
+        o.dragging=true;o.lastX=e.touches[0].clientX;o.lastY=e.touches[0].clientY;
+      }else if(e.touches.length===2){
+        o.dragging=false;pinch=dist(e.touches);
+      }
+    };
+    const onTM=e=>{
+      if(e.touches.length===2){
+        const d=dist(e.touches);
+        o.tRadius=clampR(o.tRadius-(d-pinch)*0.08);
+        pinch=d;
+        return;
+      }
+      if(!o.dragging||e.touches.length!==1)return;
+      o.tTheta-=(e.touches[0].clientX-o.lastX)*0.007;
+      o.tPhi=Math.max(0.1,Math.min(Math.PI*0.46,o.tPhi+(e.touches[0].clientY-o.lastY)*0.006));
+      o.lastX=e.touches[0].clientX;o.lastY=e.touches[0].clientY;
+    };
     const onTE=()=>{o.dragging=false;};
     const onKD=e=>{keysRef.current[e.key]=true;};
     const onKU=e=>{keysRef.current[e.key]=false;};
@@ -531,7 +571,7 @@ export default function Portfolio({onNavigate}){
         if(wk.t>=1){
           wk.phase=wk.furniture&&intRef.current[wk.furniture]?.doorL?"opening":"done";
           wk.t=0;av.userData.lArm.rotation.x=0;av.userData.rArm.rotation.x=0;av.position.y=0.07;
-          if(wk.phase==="done")setTimeout(()=>{if(onNavigate)onNavigate(wk.section);},500);
+          if(wk.phase==="done")setTimeout(()=>{onNavRef.current?.(wk.section);},500);
         }
       }
       if(wk.phase==="opening"){
@@ -539,7 +579,7 @@ export default function Portfolio({onNavigate}){
         const e=1-Math.pow(1-wk.t,3);
         const f=intRef.current[wk.furniture];
         if(f?.doorL){f.doorL.rotation.y=e*-Math.PI*0.58;f.doorR.rotation.y=e*Math.PI*0.58;}
-        if(wk.t>=1){wk.phase="done";wk.t=0;setTimeout(()=>{if(onNavigate)onNavigate(wk.section);},600);}
+        if(wk.t>=1){wk.phase="done";wk.t=0;setTimeout(()=>{onNavRef.current?.(wk.section);},600);}
       }
 
       or.theta+=(or.tTheta-or.theta)*0.08;
@@ -556,8 +596,19 @@ export default function Portfolio({onNavigate}){
     };
     animate();
 
-    const onResize=()=>{const w=mount.clientWidth,h=mount.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);};
+    const onResize=()=>{
+      const w=mount.clientWidth,h=mount.clientHeight;
+      if(!w||!h)return;
+      const a=w/h;
+      camera.aspect=a;
+      camera.fov=fovFor(a);
+      camera.updateProjectionMatrix();
+      renderer.setSize(w,h);
+      // on rotate/resize, re-frame the whole room if we're at the home view
+      if(walkRef.current.section===null&&walkRef.current.phase==="idle")o.tRadius=baseRadiusFor(a);
+    };
     window.addEventListener("resize",onResize);
+    window.addEventListener("orientationchange",onResize);
     return()=>{
       cancelAnimationFrame(rafRef.current);
       canvas.removeEventListener("mousedown",onMD);
@@ -570,10 +621,11 @@ export default function Portfolio({onNavigate}){
       window.removeEventListener("keydown",onKD);
       window.removeEventListener("keyup",onKU);
       window.removeEventListener("resize",onResize);
+      window.removeEventListener("orientationchange",onResize);
       renderer.dispose();
       if(mount.contains(renderer.domElement))mount.removeChild(renderer.domElement);
     };
-  },[onNavigate]);
+  },[]);
 
   const resetFurniture=useCallback(key=>{
     if(!key)return;
@@ -592,7 +644,9 @@ export default function Portfolio({onNavigate}){
       const diff=new THREE.Vector3().subVectors(fur.camPos,fur.camLook??new THREE.Vector3(0,2,0));
       or.tTheta=Math.atan2(diff.x,diff.z);
       or.tPhi=Math.atan2(Math.sqrt(diff.x**2+diff.z**2),diff.y);
-      or.tRadius=diff.length();
+      // a little further back on portrait screens so the furniture isn't cropped
+      const a=getAspect();
+      or.tRadius=Math.min(40,diff.length()*(a<1?1+(1-Math.max(a,0.4))*0.8:1));
     }
     const av=avatarRef.current;
     wk.from=av.position.clone();wk.to=cfg.walkTo.clone();
@@ -608,15 +662,14 @@ export default function Portfolio({onNavigate}){
     wk.from=av.position.clone();wk.to=new THREE.Vector3(0,0.07,5);
     wk.t=0;wk.phase="walking";wk.furniture=null;wk.section=null;
     const or=orbitRef.current;
-    or.tTheta=Math.PI*0.25;or.tPhi=Math.PI*0.30;or.tRadius=24;or.tTarget.set(0,2,0);
+    or.tTheta=Math.PI*0.25;or.tPhi=Math.PI*0.30;or.tRadius=baseRadiusFor(getAspect());or.tTarget.set(0,2,0);
     setActiveSection(null);setWalking(false);
   },[resetFurniture]);
 
   const meta=activeSection?NAV_META[activeSection]:null;
 
   return(
-    <div style={{width:"100vw",height:"100vh",position:"relative",overflow:"hidden",
-      fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",background:"#1a0f07"}}>
+    <div className="ws-root">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -624,6 +677,18 @@ export default function Portfolio({onNavigate}){
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+        /* 100dvh = the *visible* height on mobile browsers (100vh includes the URL bar) */
+        .ws-root{width:100%;height:100vh;height:100dvh;position:relative;overflow:hidden;
+          font-family:'Space Grotesk','Inter',system-ui,sans-serif;background:#1a0f07;}
+
+        .ws-logo{position:absolute;top:24px;left:28px;z-index:30;display:flex;align-items:center;gap:12px;animation:fadeIn 0.9s ease both;}
+        .ws-hero{position:absolute;bottom:48px;left:30px;z-index:20;pointer-events:none;animation:fadeUp 1.1s cubic-bezier(0.22,1,0.36,1) both 0.12s;}
+        .ws-nav{position:absolute;right:26px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:5px;animation:fadeIn 1.4s ease both 0.3s;}
+        .ws-pill-wrap{position:absolute;left:0;right:0;bottom:44px;z-index:20;display:flex;justify-content:center;pointer-events:none;padding:0 16px;}
+        .ws-scroll{position:absolute;bottom:46px;right:30px;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:7px;animation:fadeIn 2.5s ease both;opacity:0.5;}
+        .hint-touch{display:none;}
+
         .ws-btn{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;
           padding:9px 16px 9px 11px;border-radius:5px;
           border-top:1px solid rgba(255,215,150,0.12);border-bottom:1px solid rgba(0,0,0,0.38);
@@ -641,6 +706,21 @@ export default function Portfolio({onNavigate}){
         .ws-icon{font-size:14px;opacity:0.7;flex-shrink:0;transition:opacity 0.18s,transform 0.18s;}
         .ws-btn:hover .ws-icon,.ws-btn.active .ws-icon{opacity:1;transform:scale(1.15);}
         .ws-dot{width:5px;height:5px;border-radius:50%;background:#f4a55a;animation:blink 1.8s ease infinite;flex-shrink:0;}
+
+        /* ── Phones / small tablets: nav becomes an icon bar along the bottom ── */
+        @media (max-width: 760px){
+          .ws-logo{top:16px;left:16px;}
+          .ws-nav{right:0;left:0;top:auto;bottom:14px;transform:none;flex-direction:row;justify-content:center;gap:6px;padding:0 10px;}
+          .ws-nav-title,.ws-nav-rule,.ws-label,.ws-dot,.ws-scroll{display:none;}
+          .ws-btn{min-width:0;padding:12px 14px;border-left-width:1px;border-bottom:2px solid rgba(244,165,90,0.08);}
+          .ws-btn:hover{transform:none;}
+          .ws-btn.active{border-bottom-color:#f4a55a;}
+          .ws-icon{font-size:17px;}
+          .ws-hero{left:20px;right:20px;bottom:86px;}
+          .ws-pill-wrap{bottom:86px;}
+          .hint-desk{display:none;}
+          .hint-touch{display:inline;}
+        }
       `}</style>
 
       <div ref={mountRef} style={{position:"absolute",inset:0}}/>
@@ -649,7 +729,7 @@ export default function Portfolio({onNavigate}){
       <div style={{position:"absolute",bottom:0,left:0,right:0,height:150,background:"linear-gradient(to top,rgba(12,5,1,0.80) 0%,transparent 100%)",pointerEvents:"none",zIndex:5}}/>
 
       {/* TOP LEFT LOGO */}
-      <div style={{position:"absolute",top:24,left:28,zIndex:30,display:"flex",alignItems:"center",gap:12,animation:"fadeIn 0.9s ease both"}}>
+      <div className="ws-logo">
         <div onClick={activeSection?handleHome:undefined}
           style={{width:38,height:38,borderRadius:7,flexShrink:0,
             background:"linear-gradient(145deg,#4a1e06 0%,#8a3e14 50%,#b86828 100%)",
@@ -673,7 +753,7 @@ export default function Portfolio({onNavigate}){
 
       {/* HERO TEXT */}
       {!activeSection&&(
-        <div style={{position:"absolute",bottom:48,left:30,zIndex:20,pointerEvents:"none",animation:"fadeUp 1.1s cubic-bezier(0.22,1,0.36,1) both 0.12s"}}>
+        <div className="ws-hero">
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <div style={{width:20,height:1,background:"rgba(244,165,90,0.3)"}}/>
             <span style={{color:"rgba(190,135,60,0.48)",fontWeight:500,fontSize:8.5,letterSpacing:"0.26em",textTransform:"uppercase"}}>Creative Portfolio</span>
@@ -685,37 +765,42 @@ export default function Portfolio({onNavigate}){
           <p style={{margin:"2px 0 8px",color:"rgba(215,168,90,0.55)",fontSize:11,letterSpacing:"0.04em",fontWeight:500}}>
             Full-Stack Developer · React · Node.js · AI Applications
           </p>
-          <p style={{margin:0,color:"rgba(230,175,110,0.65)",fontSize:9.5,letterSpacing:"0.1em",fontWeight:400}}>Drag · Scroll · Arrow keys</p>
+          <p style={{margin:0,color:"rgba(230,175,110,0.65)",fontSize:9.5,letterSpacing:"0.1em",fontWeight:400}}>
+            <span className="hint-desk">Drag · Scroll · Arrow keys</span>
+            <span className="hint-touch">Drag to look · Pinch to zoom</span>
+          </p>
         </div>
       )}
 
-      {/* RIGHT NAV */}
-      <div style={{position:"absolute",right:26,top:"50%",transform:"translateY(-50%)",zIndex:20,display:"flex",flexDirection:"column",gap:5,animation:"fadeIn 1.4s ease both 0.3s",animationFillMode:"both"}}>
-        <div style={{textAlign:"right",color:"rgba(170,105,40,0.2)",fontSize:8,fontWeight:500,letterSpacing:"0.24em",textTransform:"uppercase",marginBottom:3,paddingRight:1}}>Navigate</div>
+      {/* NAV (right side on desktop, bottom bar on phones) */}
+      <div className="ws-nav">
+        <div className="ws-nav-title" style={{textAlign:"right",color:"rgba(170,105,40,0.2)",fontSize:8,fontWeight:500,letterSpacing:"0.24em",textTransform:"uppercase",marginBottom:3,paddingRight:1}}>Navigate</div>
         {Object.entries(NAV_META).map(([sec,m])=>(
-          <button key={sec} className={`ws-btn${activeSection===sec?" active":""}`} onClick={()=>handleNav(sec)}>
+          <button key={sec} title={m.label} aria-label={m.label} className={`ws-btn${activeSection===sec?" active":""}`} onClick={()=>handleNav(sec)}>
             <span className="ws-icon">{m.icon}</span>
-            <span style={{flex:1}}>{m.label}</span>
+            <span className="ws-label" style={{flex:1}}>{m.label}</span>
             {activeSection===sec&&<span className="ws-dot"/>}
           </button>
         ))}
-        <div style={{height:1,background:"linear-gradient(to right,rgba(160,90,25,0.2),transparent)",marginTop:3}}/>
+        <div className="ws-nav-rule" style={{height:1,background:"linear-gradient(to right,rgba(160,90,25,0.2),transparent)",marginTop:3}}/>
       </div>
 
       {/* WALKING PILL */}
       {walking&&meta&&(
-        <div style={{position:"absolute",bottom:44,left:"50%",transform:"translateX(-50%)",zIndex:20,display:"flex",alignItems:"center",gap:11,
-          background:"rgba(18,8,1,0.90)",backdropFilter:"blur(20px)",border:"1px solid rgba(190,130,50,0.2)",borderRadius:100,
-          padding:"10px 22px",animation:"fadeUp 0.22s ease both",boxShadow:"0 6px 28px rgba(0,0,0,0.7)"}}>
-          <div style={{width:11,height:11,borderRadius:"50%",border:"1.5px solid rgba(190,130,50,0.18)",borderTop:"1.5px solid "+meta.color,animation:"spin 0.75s linear infinite",flexShrink:0}}/>
-          <span style={{fontSize:14}}>{meta.icon}</span>
-          <span style={{color:"rgba(215,168,90,0.72)",fontWeight:500,fontSize:10.5,letterSpacing:"0.06em"}}>{meta.hint}</span>
+        <div className="ws-pill-wrap">
+          <div style={{display:"flex",alignItems:"center",gap:11,
+            background:"rgba(18,8,1,0.90)",backdropFilter:"blur(20px)",border:"1px solid rgba(190,130,50,0.2)",borderRadius:100,
+            padding:"10px 22px",animation:"fadeUp 0.22s ease both",boxShadow:"0 6px 28px rgba(0,0,0,0.7)"}}>
+            <div style={{width:11,height:11,borderRadius:"50%",border:"1.5px solid rgba(190,130,50,0.18)",borderTop:"1.5px solid "+meta.color,animation:"spin 0.75s linear infinite",flexShrink:0}}/>
+            <span style={{fontSize:14}}>{meta.icon}</span>
+            <span style={{color:"rgba(215,168,90,0.72)",fontWeight:500,fontSize:10.5,letterSpacing:"0.06em"}}>{meta.hint}</span>
+          </div>
         </div>
       )}
 
-      {/* SCROLL HINT */}
+      {/* SCROLL HINT (desktop only) */}
       {!activeSection&&(
-        <div style={{position:"absolute",bottom:46,right:30,zIndex:10,pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:7,animation:"fadeIn 2.5s ease both",opacity:0.5}}>
+        <div className="ws-scroll">
           <div style={{width:9,height:13,borderRadius:5,border:"1.5px solid rgba(195,135,55,0.28)",position:"relative",overflow:"hidden"}}>
             <div style={{width:3,height:3,borderRadius:"50%",background:"rgba(195,135,55,0.55)",position:"absolute",left:"50%",transform:"translateX(-50%)",top:2,animation:"drift 1.8s ease-in-out infinite"}}/>
           </div>

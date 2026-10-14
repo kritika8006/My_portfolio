@@ -82,13 +82,14 @@ function ProfBar({ pct, color, animate }) {
   );
 }
 
-// ── STACK PANEL (UPDATED) ────────────────────────────────────────
+// ── STACK PANEL ──────────────────────────────────────────────────
 function StackPanel() {
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
+        // min(320px,100%) stops the column from overflowing screens narrower than 320px
+        gridTemplateColumns: "repeat(auto-fit,minmax(min(320px,100%),1fr))",
         gap: "1.5rem",
         paddingTop: "2rem",
       }}
@@ -100,7 +101,7 @@ function StackPanel() {
             background: T.card,
             border: `1px solid ${T.border}`,
             borderRadius: 16,
-            padding: "1.4rem",
+            padding: "clamp(1rem, 3vw, 1.4rem)",
           }}
         >
           <div
@@ -109,10 +110,11 @@ function StackPanel() {
               justifyContent: "space-between",
               marginBottom: "1rem",
               alignItems: "center",
+              gap: 8,
             }}
           >
             <h3 style={{ color: g.color, margin: 0, fontSize: "1rem" }}>{g.title}</h3>
-            <span style={{ color: T.txt3, fontSize: 12 }}>{g.skills.length} skills</span>
+            <span style={{ color: T.txt3, fontSize: 12, whiteSpace: "nowrap" }}>{g.skills.length} skills</span>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: ".55rem" }}>
@@ -139,10 +141,10 @@ function ProficiencyPanel({ active }) {
       <p style={S.label}>Self-assessed depth by area</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
         {BARS.map(b => (
-          <div key={b.label} style={{ background: T.card, borderRadius: 12, border: `1px solid ${T.border}`, padding: "1.1rem 1.3rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.8rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: b.color, boxShadow: `0 0 7px ${b.color}`, display: "inline-block" }} />
+          <div key={b.label} style={{ background: T.card, borderRadius: 12, border: `1px solid ${T.border}`, padding: "1.1rem clamp(0.9rem, 3vw, 1.3rem)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.8rem", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: b.color, boxShadow: `0 0 7px ${b.color}`, display: "inline-block", flexShrink: 0 }} />
                 <span style={{ color: T.txt, fontSize: "0.9rem", fontWeight: 600 }}>{b.label}</span>
               </div>
               <span style={{ color: b.color, fontSize: "0.82rem", fontWeight: 700, fontFamily: "monospace" }}>{b.pct}%</span>
@@ -159,10 +161,24 @@ function ProficiencyPanel({ active }) {
 function AboutPanel() {
   return (
     <div style={{ paddingTop: "2rem" }}>
+      <style>{`
+        .glance-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1px;
+          background: ${T.border};
+          border: 1px solid ${T.border};
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        @media (max-width: 520px) {
+          .glance-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <p style={S.label}>Quick summary</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: T.border, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden" }}>
+      <div className="glance-grid">
         {ABOUT.map(a => (
-          <div key={a.lbl} style={{ padding: "1.25rem 1.5rem", background: T.card }}>
+          <div key={a.lbl} style={{ padding: "1.25rem clamp(1rem, 3vw, 1.5rem)", background: T.card }}>
             <p style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: T.txt3, marginBottom: "0.4rem" }}>{a.lbl}</p>
             <p style={{ fontSize: 15, fontWeight: 600, color: T.txt, lineHeight: 1.4 }}>{a.val}</p>
             <p style={{ fontSize: 12, color: T.txt2, marginTop: "0.2rem" }}>{a.sub}</p>
@@ -185,10 +201,10 @@ export default function Skills() {
   return (
     <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt }}>
       {/* ... (ConstellationScene remains unchanged as per instruction) ... */}
-      
-      <div style={{ borderTop: `1px solid ${T.border}`, padding: "4rem 2rem 5rem" }}>
+
+      <div style={{ borderTop: `1px solid ${T.border}`, padding: "clamp(2.5rem,6vw,4rem) clamp(1rem,4vw,2rem) clamp(3rem,7vw,5rem)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          
+
           <div style={{ marginBottom: "2.5rem" }}>
             <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal, display: "block", marginBottom: "0.5rem" }}>Tech Stack</span>
             <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 800, color: "#f5ead8", letterSpacing: "-0.03em", margin: 0 }}>What I work with</h2>
@@ -203,7 +219,7 @@ export default function Skills() {
                     padding: "0.6rem 1.1rem", fontSize: 13, fontWeight: 600,
                     color: on ? T.teal : T.txt3, border: "none", background: "none", cursor: "pointer",
                     borderBottom: `2px solid ${on ? T.teal : "transparent"}`,
-                    marginBottom: -1, whiteSpace: "nowrap", transition: "all 0.18s",
+                    marginBottom: -1, whiteSpace: "nowrap", transition: "all 0.18s", flexShrink: 0,
                   }}>
                   {t.label}
                 </button>

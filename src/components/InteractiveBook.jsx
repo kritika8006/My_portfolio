@@ -120,6 +120,27 @@ export default function InteractiveBook({
   const [isHovering, setIsHovering] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
+  const widthNum = typeof width === "number" ? width : 350;
+
+  // ── Responsive: "compact" mode ─────────────────────────────────
+  // An open book is two pages wide (2 × width). If that doesn't fit the screen,
+  // we stop shifting the book to centre the spread; instead the right-hand
+  // (content) page stays centred and the blank left pages slide off-screen.
+  // Prev / Next buttons appear since the left page can't be tapped any more.
+  const [viewportW, setViewportW] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+  useEffect(() => {
+    const on = () => setViewportW(window.innerWidth);
+    window.addEventListener("resize", on);
+    window.addEventListener("orientationchange", on);
+    return () => {
+      window.removeEventListener("resize", on);
+      window.removeEventListener("orientationchange", on);
+    };
+  }, []);
+  const compact = viewportW < widthNum * 2 + 48;
+
   const handleCoverMouseMove = (e) => {
     if (isOpen) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -130,8 +151,6 @@ export default function InteractiveBook({
       x: (py - 0.5) * 8,
     });
   };
-
-  const widthNum = typeof width === "number" ? width : 350;
 
   const BOOK_OPEN_DURATION = 1.5;
   const EASING = [0.25, 0, 0, 1];
@@ -178,16 +197,19 @@ export default function InteractiveBook({
     <div
       className={cn("relative flex items-center justify-center", className)}
       style={{
-        width: typeof width === "number" ? width * 3.5 : "100%",
+        // was width * 3.5 (e.g. 1260px) which overflowed phones and tablets
+        width: "100%",
+        maxWidth: typeof width === "number" ? width * 3.5 : "100%",
         height: typeof height === "number" ? height + 100 : "auto",
         perspective: "2000px",
+        overflow: compact ? "hidden" : "visible",
       }}
     >
       <motion.div
         className="relative"
         style={{ width, height, transformStyle: "preserve-3d" }}
         initial={{ x: 0 }}
-        animate={{ x: isOpen ? widthNum / 2 : 0 }}
+        animate={{ x: isOpen && !compact ? widthNum / 2 : 0 }}
         transition={{ duration: BOOK_OPEN_DURATION, ease: EASING }}
       >
         {/* Front Cover */}
@@ -312,6 +334,26 @@ export default function InteractiveBook({
         </div>
       </motion.div>
 
+      {/* Prev / Next buttons — compact (small-screen) mode only */}
+      {isOpen && compact && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-3 z-[60]">
+          <button
+            onClick={prevPage}
+            disabled={currentPageIndex < 0}
+            className="px-5 py-2 rounded-full bg-white/70 text-sm text-neutral-700 shadow-sm disabled:opacity-40"
+          >
+            ‹ Prev
+          </button>
+          <button
+            onClick={nextPage}
+            disabled={currentPageIndex >= pages.length - 1}
+            className="px-5 py-2 rounded-full bg-white/70 text-sm text-neutral-700 shadow-sm disabled:opacity-40"
+          >
+            Next ›
+          </button>
+        </div>
+      )}
+
       {/* Close Button */}
       <AnimatePresence>
         {isOpen && (
@@ -320,7 +362,7 @@ export default function InteractiveBook({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={handleCloseBook}
-            className="absolute top-8 right-8 p-2 rounded-full bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 backdrop-blur-sm text-neutral-800 dark:text-neutral-100 z-[1000] transition-all hover:scale-110 shadow-sm hover:shadow-xl"
+            className="absolute top-2 right-2 sm:top-8 sm:right-8 p-2 rounded-full bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 backdrop-blur-sm text-neutral-800 dark:text-neutral-100 z-[1000] transition-all hover:scale-110 shadow-sm hover:shadow-xl"
           >
             <XIcon size={24} />
           </motion.button>
@@ -336,7 +378,7 @@ export default function InteractiveBook({
           className="absolute bottom-4 text-neutral-500 dark:text-neutral-400 text-sm font-medium tracking-widest uppercase cursor-pointer z-50 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
           onClick={handleOpenBook}
         >
-          Click to Open
+          {compact ? "Tap to Open" : "Click to Open"}
         </motion.div>
       )}
     </div>

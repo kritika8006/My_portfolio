@@ -52,6 +52,20 @@ export default function App() {
 
   return (
     <>
+      {/* Responsive helpers for the top bar (inline styles can't do media queries) */}
+      <style>{`
+        html, body { overflow-x: hidden; }
+        img, video, canvas { max-width: 100%; }
+        @media (max-width: 640px) {
+          .nav-label { display: none; }
+          .nav-tab   { padding: 8px 11px !important; }
+          .nav-bar   { gap: 8px !important; }
+        }
+        @media (max-width: 480px) {
+          .kj-logo { display: none !important; }
+        }
+      `}</style>
+
       {/* ── 3D ROOM ───────────────────────────────────── */}
       {!isFullPage && (
         <Portfolio onNavigate={handleNavigate} />
@@ -68,7 +82,7 @@ export default function App() {
         }}>
 
           {/* ── Top bar ───────────────────────────────── */}
-          <div style={{
+          <div className="nav-bar" style={{
             position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
             height: 64,
             background: "rgba(255,248,239,0.85)",
@@ -77,7 +91,7 @@ export default function App() {
             borderBottom: "1px solid rgba(249,115,22,0.1)",
             boxShadow: "0 2px 20px rgba(180,83,9,0.06)",
             display: "flex", alignItems: "center",
-            padding: "0 24px",
+            padding: "0 clamp(10px, 3vw, 24px)",
             gap: 12,
             fontFamily: "'Inter', system-ui, sans-serif",
           }}>
@@ -104,12 +118,15 @@ export default function App() {
             <div style={{ width:1, height:28, background:"rgba(249,115,22,0.15)", flexShrink:0 }} />
 
             {/* Section tabs */}
-            <div style={{ display:"flex", gap:4, flex:1, overflowX:"auto" }}>
+            <div style={{ display:"flex", gap:4, flex:1, overflowX:"auto", minWidth: 0 }}>
               {Object.entries(SECTION_MAP).map(([label, key]) => {
                 const active = view === key;
                 return (
                   <button
                     key={key}
+                    className="nav-tab"
+                    title={label}
+                    aria-label={label}
                     onClick={() => setView(key)}
                     style={{
                       all: "unset", cursor: "pointer",
@@ -122,19 +139,20 @@ export default function App() {
                       color: active ? "#fff" : "#92400e",
                       transition: "all 0.18s ease",
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                     onMouseEnter={e => { if (!active) e.currentTarget.style.background="rgba(249,115,22,0.1)"; }}
                     onMouseLeave={e => { if (!active) e.currentTarget.style.background="transparent"; }}
                   >
                     <span style={{ fontSize:13 }}>{NAV_ICONS[label]}</span>
-                    {label}
+                    <span className="nav-label">{label}</span>
                   </button>
                 );
               })}
             </div>
 
             {/* KJ logo */}
-            <div style={{
+            <div className="kj-logo" style={{
               width:34, height:34, borderRadius:8, flexShrink:0,
               background:"linear-gradient(145deg,#4a1e06,#b86828)",
               display:"flex", alignItems:"center", justifyContent:"center",

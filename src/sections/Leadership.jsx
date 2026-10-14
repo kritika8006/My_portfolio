@@ -1,5 +1,6 @@
 import { useState } from "react";
 import InteractiveBook from "../components/InteractiveBook";
+import { useViewportWidth } from "../hooks/useViewport";
 
 const T = {
   bg: "#160f08", card: "#1c130a", border: "#3a2a18", border2: "#4a3320",
@@ -250,8 +251,15 @@ function ImpactCard({ stat }) {
 }
 
 export default function Leadership() {
+  const vw = useViewportWidth();
+
+  // Book keeps its 2:3 proportions but shrinks to fit the screen
+  // (360×540 on desktop, down to 240 wide on very small phones).
+  const bookW = Math.min(360, Math.max(240, vw - 48));
+  const bookH = Math.round(bookW * 1.5);
+
   return (
-    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt, position: "relative" }}>
+    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt, position: "relative", overflowX: "hidden" }}>
       <style>{`@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }`}</style>
 
       {/* ── HERO / BOOK ── */}
@@ -259,7 +267,7 @@ export default function Leadership() {
         position: "relative",
         zIndex: 1,
         minHeight: "100vh",
-        padding: "5rem 2rem 4rem",
+        padding: "clamp(3rem,8vw,5rem) clamp(1rem,4vw,2rem) clamp(2.5rem,6vw,4rem)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -272,18 +280,18 @@ export default function Leadership() {
           top: "8%",
           left: "50%",
           transform: "translateX(-50%)",
-          width: 700,
-          height: 700,
+          width: "min(700px, 140vw)",
+          height: "min(700px, 140vw)",
           background: `radial-gradient(circle, ${T.teal}14 0%, transparent 65%)`,
           pointerEvents: "none",
         }} />
 
-        <div style={{ textAlign: "center", animation: "fadeUp 0.85s ease both", marginBottom: "2.5rem", position: "relative" }}>
+        <div style={{ textAlign: "center", animation: "fadeUp 0.85s ease both", marginBottom: "clamp(1.5rem,4vw,2.5rem)", position: "relative" }}>
           <span style={{ fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal, marginBottom: "1rem", display: "block" }}>
             Portfolio · Leadership
           </span>
-          <h1 style={{ color: "#f5ead8", fontSize: "clamp(3rem, 7vw, 5rem)", fontWeight: 800, margin: 0 }}>Leadership</h1>
-          <p style={{ color: `${T.txt2}99`, fontSize: "1rem", marginTop: "1rem" }}>
+          <h1 style={{ color: "#f5ead8", fontSize: "clamp(2.4rem, 9vw, 5rem)", fontWeight: 800, margin: 0 }}>Leadership</h1>
+          <p style={{ color: `${T.txt2}99`, fontSize: "clamp(0.85rem,2.5vw,1rem)", marginTop: "1rem" }}>
             Building community · shipping platforms · leading teams
           </p>
         </div>
@@ -293,13 +301,13 @@ export default function Leadership() {
           bookTitle="Leadership"
           bookAuthor="Kritika"
           pages={BOOK_PAGES}
-          width={360}
-          height={540}
+          width={bookW}
+          height={bookH}
         />
       </div>
 
       {/* ── IMPACT ── */}
-      <div style={{ position: "relative", zIndex: 1, background: "transparent", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ position: "relative", zIndex: 1, background: "transparent", padding: "clamp(3rem,8vw,5rem) clamp(1rem,4vw,2.5rem)", borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "68rem", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
             <span style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: T.teal }}>
@@ -307,7 +315,7 @@ export default function Leadership() {
             </span>
             <h2 style={{ color: "#f5ead8", fontSize: "1.9rem", fontWeight: 700, margin: "0.5rem 0 0" }}>Impact</h2>
           </div>
-          <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
+          <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit,minmax(min(150px,100%),1fr))" }}>
             {IMPACT.map((s) => (
               <ImpactCard key={s.lbl} stat={s} />
             ))}

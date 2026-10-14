@@ -17,6 +17,9 @@ const T = {
   violet:  "#c97b3a",
 };
 
+// Shared responsive section padding (vertical, horizontal)
+const SECTION_PAD = "clamp(3rem,8vw,5rem) clamp(1.25rem,5vw,2.5rem)";
+
 // ─── Data ────────────────────────────────────────────────────────
 const JOURNEY = [
   {
@@ -73,6 +76,16 @@ function DeskHero() {
     const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 60);
     camera.position.set(5, 4, 6);
     camera.lookAt(0, 1.5, 0);
+
+    // On tall/narrow screens the desk gets cropped at the sides, so widen the
+    // field of view and orbit further out. Landscape is unchanged (fov 42, r 7.5).
+    const applyAspect = () => {
+      const a = W / H;
+      camera.aspect = a;
+      camera.fov = a < 1 ? 42 + (1 - Math.max(a, 0.4)) * 40 : 42;
+      camera.updateProjectionMatrix();
+    };
+    applyAspect();
 
     scene.add(new THREE.AmbientLight("#ffe8c0", 0.9));
     const sun = new THREE.DirectionalLight("#fff8e8", 3.2);
@@ -166,7 +179,10 @@ function DeskHero() {
     const loop = () => {
       raf.id = requestAnimationFrame(loop);
       t += 0.005;
-      const r = 7.5, base = t;
+      // orbit radius grows on portrait screens so the whole desk stays in frame
+      const aspect = W / H;
+      const r = aspect < 1 ? 7.5 + (1 - Math.max(aspect, 0.4)) * 9 : 7.5;
+      const base = t;
       const tx = Math.sin(base) * r + mouseX * 0.4;
       const ty = 4.2 + mouseY * 0.3;
       const tz = Math.cos(base) * r;
@@ -181,14 +197,16 @@ function DeskHero() {
 
     const onResize = () => {
       W = el.clientWidth; H = el.clientHeight;
-      camera.aspect = W / H; camera.updateProjectionMatrix();
+      applyAspect();
       renderer.setSize(W, H);
     };
     window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
     return () => {
       cancelAnimationFrame(raf.id);
       window.removeEventListener("mousemove", onMM);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
       renderer.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
@@ -201,7 +219,7 @@ function DeskHero() {
 // ═══════════════════════════════════════════════════════════════
 export default function About() {
   return (
-    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt }}>
+    <div style={{ fontFamily: "'Inter',system-ui,sans-serif", background: T.bg, minHeight: "100vh", color: T.txt, overflowX: "hidden" }}>
       <style>{`
         @keyframes fadeUp  { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
         @keyframes pulse   { 0%,100%{opacity:0.4} 50%{opacity:1} }
@@ -217,7 +235,7 @@ export default function About() {
           pointerEvents: "none",
         }} />
         <div style={{
-          position: "absolute", bottom: 60, left: 0, right: 0,
+          position: "absolute", bottom: 60, left: 0, right: 0, padding: "0 1.25rem",
           textAlign: "center", animation: "fadeUp 0.8s ease both", pointerEvents: "none",
         }}>
           <span style={{
@@ -231,7 +249,7 @@ export default function About() {
           }}>
             Hi, I'm Kritika
           </h1>
-          <p style={{ color: `${T.txt2}88`, fontSize: "1rem", margin: 0, letterSpacing: "0.04em" }}>
+          <p style={{ color: `${T.txt2}88`, fontSize: "clamp(0.8rem,2.6vw,1rem)", margin: 0, letterSpacing: "0.04em", lineHeight: 1.6 }}>
             Full-Stack Developer · Cyber Security Club Head · AI Builder
           </p>
         </div>
@@ -247,10 +265,10 @@ export default function About() {
       </div>
 
       {/* ── WHO I AM ──────────────────────────── */}
-      <div style={{ background: T.bg, padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: T.bg, padding: SECTION_PAD, borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "68rem", margin: "0 auto" }}>
           <Reveal delay={0}>
-            <div style={{ display: "grid", gap: "2.5rem", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", alignItems: "start" }}>
+            <div style={{ display: "grid", gap: "2.5rem", gridTemplateColumns: "repeat(auto-fit,minmax(min(280px,100%),1fr))", alignItems: "start" }}>
               {/* Bio text */}
               <div>
                 <span style={{
@@ -312,7 +330,7 @@ export default function About() {
       </div>
 
       {/* ── JOURNEY ──────────────────────────── */}
-      <div style={{ background: "#100b05", padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: "#100b05", padding: SECTION_PAD, borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "68rem", margin: "0 auto" }}>
           <Reveal delay={0}>
             <span style={{
@@ -324,7 +342,7 @@ export default function About() {
               color: "#f5ead8", letterSpacing: "-0.03em", margin: "0 0 3rem",
             }}>How I got here</h2>
           </Reveal>
-          <div style={{ display: "grid", gap: "1.1rem", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))" }}>
+          <div style={{ display: "grid", gap: "1.1rem", gridTemplateColumns: "repeat(auto-fit,minmax(min(240px,100%),1fr))" }}>
             {JOURNEY.map((item, i) => (
               <Reveal key={item.title} delay={0.08 + i * 0.1}>
                 <div
@@ -333,6 +351,7 @@ export default function About() {
                     borderTop: `2px solid ${item.color}`,
                     borderRadius: "12px", padding: "1.6rem",
                     transition: "transform .28s, box-shadow .28s, border-color .28s",
+                    height: "100%", boxSizing: "border-box",
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = "translateY(-6px)";
@@ -356,7 +375,7 @@ export default function About() {
       </div>
 
       {/* ── TERMINAL BIO ─────────────────────── */}
-      <div style={{ background: T.bg, padding: "5rem 2.5rem", borderTop: `1px solid ${T.border}` }}>
+      <div style={{ background: T.bg, padding: SECTION_PAD, borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
           <Reveal delay={0}>
             <span style={{
@@ -382,10 +401,11 @@ export default function About() {
                 </span>
               </div>
               <div style={{
-                background: "#0e0904", padding: "1.75rem 2rem",
+                background: "#0e0904", padding: "clamp(1.1rem,4vw,1.75rem) clamp(1rem,4vw,2rem)",
                 fontFamily: "'JetBrains Mono','Fira Code',monospace",
-                fontSize: "0.88rem", lineHeight: 2.1,
-                display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "0 3rem",
+                fontSize: "clamp(0.78rem,2.8vw,0.88rem)", lineHeight: 2.1,
+                display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(220px,100%),1fr))", gap: "0 3rem",
+                overflowWrap: "anywhere",
               }}>
                 <div>
                   <p style={{ color: T.teal, margin: 0 }}>&gt; current_role</p>

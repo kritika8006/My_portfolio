@@ -217,7 +217,7 @@ export default function Contact() {
   // On-book overlay sizes scale with the rendered video.
   const scale = Math.max(stageSize.w / VIDEO_W, stageSize.h / VIDEO_H) || 1;
   const px = (base, min, max) => Math.round(Math.min(max, Math.max(min, base * scale)));
-  const logoW   = px(190, 80, 290);
+ const logoW   = px(110, 56, 150);   
   const textW   = px(225, 150, 340);
   const labelFs = px(21, 16, 38);
   const valueFs = px(12.5, 11, 20);

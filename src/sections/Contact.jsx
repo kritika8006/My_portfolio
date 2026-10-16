@@ -46,26 +46,21 @@ const VIDEO_H = 720;
 
 // Coordinates below were measured directly against the flip video's final,
 // settled frame (as fractions of the 1280×720 source, NOT of the screen).
-// The two blank areas sit at different heights, so these are independent:
-//   - left page's blank area centers around (27%, 52%) of the raw frame
-//   - right page's drawn placeholder box centers around (66%, 46%)
-// Left page - GitHub logo
+// Left page - logo
 const LOGO_FRAC = {
-  x: 0.345,   // unchanged
-  y: 0.405,   // 2 blocks further up
+  x: 0.345,
+  y: 0.405,
 };
 
-// Right page - GitHub text
+// Right page - text
 const TEXT_FRAC = {
-  x: 0.605,   // 4 blocks left
-  y: 0.315,   // 6 blocks up
+  x: 0.605,
+  y: 0.315,
 };
+
 // Converts a fraction-of-the-source-video point into a CSS left/top
 // percentage of the on-screen container, accounting for how objectFit:
-// "cover" scales and crops the video to fill a container whose aspect
-// ratio generally does NOT match the video's 16:9 native aspect ratio.
-// Without this, a flat percentage only lines up by coincidence — it drifts
-// as soon as the browser window is a different shape.
+// "cover" scales and crops the video.
 function coverFractionToPercent(frac, containerW, containerH) {
   if (!containerW || !containerH) return { left: `${frac.x * 100}%`, top: `${frac.y * 100}%` };
   const scale = Math.max(containerW / VIDEO_W, containerH / VIDEO_H);
@@ -94,8 +89,7 @@ export default function Contact() {
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  // keep the measured stage size in sync with the actual rendered box the
-  // video fills (not just window size — this is robust to layout changes)
+  // keep the measured stage size in sync with the actual rendered box
   useEffect(() => {
     const el = stickyRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -114,8 +108,6 @@ export default function Contact() {
   }, []);
 
   // scroll → which chapter is active
-  // Only reacts when the scroll position moves to a DIFFERENT chapter,
-  // and is ignored while a dot-click is in progress.
   useEffect(() => {
     const onScroll = () => {
       const el = containerRef.current;
@@ -149,16 +141,7 @@ export default function Contact() {
 
     const fallbacks = [];
     const timeupdateCleanups = [];
-    // safety net: if a video ever fails to autoplay/fire 'ended' (slow network,
-    // browser autoplay policy, etc.), force the reveal anyway after a max wait —
-    // the section should never get permanently stuck.
 
-    // Reveal only once the flip clip has actually settled — measured against
-    // the real footage, the page is still visibly turning through ~85-90% of
-    // this clip's length, so triggering on a flat short timeout showed the
-    // overlay while the hand was still mid-flip. Instead we watch playback
-    // progress and reveal near the very end, with a duration-aware fallback
-    // in case metadata/timeupdate isn't available.
     const revealNearEnd = (video) => {
       const trigger = () => setPhase("reveal");
 
@@ -171,7 +154,6 @@ export default function Contact() {
       video.addEventListener("timeupdate", onTimeUpdate);
       timeupdateCleanups.push(() => video.removeEventListener("timeupdate", onTimeUpdate));
 
-      // duration-aware fallback: ~92% of the clip's real playback time
       const estSeconds = video.duration && isFinite(video.duration) ? video.duration / video.playbackRate : 4.545;
       fallbacks.push(setTimeout(trigger, estSeconds * 0.92 * 1000));
     };
@@ -203,7 +185,7 @@ export default function Contact() {
       };
     }
 
-    // subsequent chapters — the book's already open on the table, just flip to a new page
+    // subsequent chapters — the book's already open, just flip to a new page
     reach.pause();
     setPhase("flip");
     flip.currentTime = 0;
@@ -222,22 +204,17 @@ export default function Contact() {
   const isEmail = chapter.kind === "email";
 
   // ── Responsive layout ────────────────────────────────────────────
-  // On portrait screens (phones, portrait tablets) objectFit:"cover" would crop
-  // the 16:9 video down to a thin centre strip and push the logo/text overlays
-  // off-screen. So below ~0.95 aspect ratio we switch to a "stacked" layout:
-  // the video sits in a 16:9 box (no cropping) and the chapter details + links
-  // render in a column underneath instead of on top of the book pages.
+  // Portrait screens switch to a "stacked" layout: the video sits in an uncropped
+  // 16:9 box and everything else renders in a column underneath it.
   const stacked = stageSize.w > 0 && stageSize.w / stageSize.h < 0.95;
   const vidH = (stageSize.w * 9) / 16;
-  // ← CHANGED: video starts higher (was 20% of height, min 150) to leave room below
   const vidTop = Math.max(140, Math.min(170, stageSize.h * 0.15));
 
   const videoBox = stacked
     ? { position: "absolute", left: 0, top: vidTop, width: "100%", height: vidH, objectFit: "cover" }
     : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" };
 
-  // ← CHANGED: overlay sizes are now bigger and scale with the rendered video.
-  // px(base, min, max) = base size × video scale, clamped.
+  // On-book overlay sizes scale with the rendered video.
   const scale = Math.max(stageSize.w / VIDEO_W, stageSize.h / VIDEO_H) || 1;
   const px = (base, min, max) => Math.round(Math.min(max, Math.max(min, base * scale)));
   const logoW   = px(190, 80, 290);
@@ -256,9 +233,6 @@ export default function Contact() {
     timers.current.push(setTimeout(() => setEmailState("idle"), 3000));
   };
 
-  // switches the chapter immediately (so the click always works),
-  // THEN scrolls the page to match. The lock stops the scroll handler from
-  // flipping through the in-between chapters while the smooth scroll runs.
   const goTo = (i) => {
     navLock.current = true;
     timers.current.push(setTimeout(() => { navLock.current = false; }, 1200));
@@ -266,8 +240,7 @@ export default function Contact() {
     markersRef.current[i]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // jump straight to the revealed book. Stops both videos, parks the flip
-  // video on its final (settled) frame, and shows the links right away.
+  // jump straight to the revealed book
   const skipIntro = () => {
     const reach = reachRef.current;
     const flip = flipRef.current;
@@ -281,34 +254,80 @@ export default function Contact() {
     setPhase("reveal");
   };
 
-  // ← CHANGED: the quiet links row is now a reusable element, so it can sit in
-  // different places on desktop vs stacked layouts without overlapping anything.
-  const quietLinks = (
+  // ← NEW: big, obvious skip button (shown only while the videos play)
+  const skipButton = (
+    <button
+      type="button"
+      onClick={skipIntro}
+      className="skip-btn"
+      style={{
+        alignSelf: "center",
+        padding: "13px 30px", borderRadius: 999, border: "none", cursor: "pointer",
+        background: "#f97316", color: "#fff",
+        fontSize: "1rem", fontWeight: 700, letterSpacing: "0.03em",
+        display: "inline-flex", alignItems: "center", gap: 10,
+        animation: "fadeOnly .5s ease both .4s, pulseRing 2s ease-out infinite 1s",
+      }}
+    >
+      <span style={{ fontSize: "1.1rem" }}>⏭</span> Skip video
+    </button>
+  );
+
+  // ← NEW: three big cards — logo + name + handle. The whole card is a link.
+  const linkCards = (
     <div style={{
-      display: "flex", justifyContent: "center", alignItems: "center", gap: 14,
-      flexWrap: "wrap", padding: "0 1rem",
+      display: "flex", gap: stacked ? 10 : 16, justifyContent: "center",
+      flexWrap: "wrap", width: "100%",
     }}>
-      {CHAPTERS.map((c, i) => (
-        <span key={c.label} style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+      {CHAPTERS.map((c, i) => {
+        const email = c.kind === "email";
+        const active = i === step;
+        return (
           <a
+            key={c.label}
             href={c.href}
-            target={c.kind === "email" ? undefined : "_blank"}
+            target={email ? undefined : "_blank"}
             rel="noreferrer"
-            className="quiet-link"
+            onClick={email ? handleEmailAction : undefined}
+            className="link-card"
             style={{
-              color: "#F5F1E8", opacity: 0.85,
-              fontSize: "0.82rem", fontWeight: 600, letterSpacing: "0.06em",
-              textDecoration: "none", textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-              padding: "4px 0",
+              display: "flex",
+              flexDirection: stacked ? "column" : "row",
+              alignItems: "center",
+              gap: stacked ? 8 : 14,
+              flex: stacked ? "1 1 0" : "0 1 auto",
+              minWidth: stacked ? 0 : 230,
+              boxSizing: "border-box",
+              padding: stacked ? "14px 6px" : "14px 24px",
+              borderRadius: 16,
+              background: "rgba(245,241,232,0.97)",
+              border: `2px solid ${active ? "#f97316" : "transparent"}`,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+              textDecoration: "none",
+              textAlign: stacked ? "center" : "left",
+              animation: `fadeOnly .5s ease both ${i * 0.1}s`,
             }}
           >
-            {c.label}
+            <img
+              src={c.logo}
+              alt={`${c.label} logo`}
+              style={{ width: stacked ? 40 : 52, height: stacked ? 40 : 52, objectFit: "contain", flexShrink: 0 }}
+            />
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", color: "#1f1710", fontWeight: 700, fontSize: stacked ? "0.95rem" : "1.1rem", fontFamily: "Georgia, serif" }}>
+                {c.label}
+              </span>
+              <span style={{ display: "block", color: "#4a3f2e", fontSize: stacked ? "0.72rem" : "0.82rem", fontFamily: "Georgia, serif", marginTop: 2, overflowWrap: "anywhere" }}>
+                {email && emailState === "sent"
+                  ? "Sent ✓"
+                  : stacked
+                    ? "Tap to open →"
+                    : c.value}
+              </span>
+            </span>
           </a>
-          {i < CHAPTERS.length - 1 && (
-            <span style={{ color: "#F5F1E8", opacity: 0.4, textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>·</span>
-          )}
-        </span>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -325,11 +344,16 @@ export default function Contact() {
     to { opacity:1; transform:translateY(0) scale(1); }
   }
 
-  /* cardIn above animates transform, which would override centring
-     transforms, so layouts that need them use this fade-only animation */
   @keyframes fadeOnly {
     from { opacity:0; }
     to { opacity:1; }
+  }
+
+  /* ← NEW: soft pulsing ring so the skip button is easy to notice */
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(249,115,22,0.6), 0 6px 18px rgba(0,0,0,0.35); }
+    70%  { box-shadow: 0 0 0 14px rgba(249,115,22,0), 0 6px 18px rgba(0,0,0,0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(249,115,22,0), 0 6px 18px rgba(0,0,0,0.35); }
   }
 
   @keyframes inkReveal {
@@ -380,23 +404,24 @@ export default function Contact() {
   }
 
   .skip-btn {
-    transition: background .2s ease, transform .2s ease;
+    transition: transform .2s ease, background .2s ease;
   }
   .skip-btn:hover {
-    background: rgba(245,241,232,0.98);
-    transform: translateY(-1px);
+    background: #ea580c !important;
+    transform: translateY(-2px);
   }
-  .quiet-link {
-    transition: opacity .2s ease;
+
+  .link-card {
+    transition: transform .2s ease, border-color .2s ease;
   }
-  .quiet-link:hover {
-    opacity: 1 !important;
-    text-decoration: underline !important;
+  .link-card:hover {
+    transform: translateY(-4px);
+    border-color: #f97316 !important;
   }
 `}</style>
 
       <div ref={containerRef} style={{ height: "300vh", position: "relative" }}>
-        {/* invisible scroll targets, one per chapter (middle of each chapter's range) */}
+        {/* invisible scroll targets, one per chapter */}
         {CHAPTERS.map((c, i) => (
           <div
             key={c.label}
@@ -505,36 +530,10 @@ export default function Contact() {
   </h1>
 </div>
 
-          {/* Skip button — only while the videos are still playing */}
-          {phase !== "reveal" && (
-            <button
-              type="button"
-              onClick={skipIntro}
-              className="skip-btn"
-              style={{
-                position: "absolute", top: 80, right: "clamp(12px, 3vw, 28px)", zIndex: 10,
-                padding: "8px 16px", borderRadius: 999, border: "none", cursor: "pointer",
-                background: "rgba(245,241,232,0.88)", color: "#1f1710",
-                fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.04em",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
-                animation: "fadeOnly .6s ease both .8s",
-              }}
-            >
-              Skip intro →
-            </button>
-          )}
-
           {/* ── Desktop / landscape: details drawn ON the book pages ── */}
           {phase === "reveal" && !stacked && (
             <div key={step}>
-              {/*
-                Positions are computed at runtime (see coverFractionToPercent
-                above) from LOGO_FRAC / TEXT_FRAC — coordinates measured on
-                the raw 1280×720 video frame — mapped through the same
-                scale/crop math the browser applies for objectFit:"cover".
-              */}
-
-              {/* left page — the logo, centered in the blank area of the left page */}
+              {/* left page — the logo */}
               <div style={{
                 position: "absolute", left: logoPos.left, top: logoPos.top, transform: "translate(-50%,-50%)",
                 zIndex: 2, animation: "cardIn .6s cubic-bezier(.16,1,.3,1) both",
@@ -546,7 +545,7 @@ export default function Contact() {
                 />
               </div>
 
-              {/* right page — name/label + link, centered inside the drawn box on the right page */}
+              {/* right page — name/label + link */}
               <div style={{
                 position: "absolute", left: textPos.left, top: textPos.top, transform: "translate(-50%,-50%)",
                 zIndex: 2, textAlign: "center", animation: "cardIn .6s cubic-bezier(.16,1,.3,1) .1s both",
@@ -575,74 +574,34 @@ export default function Contact() {
             </div>
           )}
 
-          {/* ← CHANGED: Desktop quiet links — fixed row just above the dots */}
+          {/* ← NEW: Desktop slot — skip button during the intro, cards after it.
+              Both live in the same spot, just above the dots, so they never overlap. */}
           {!stacked && (
-            <div style={{ position: "absolute", left: 0, right: 0, bottom: "10%", zIndex: 10 }}>
-              {quietLinks}
+            <div style={{
+              position: "absolute", left: 0, right: 0, bottom: 76, zIndex: 10,
+              display: "flex", justifyContent: "center", padding: "0 1.5rem",
+            }}>
+              {phase === "reveal" ? linkCards : skipButton}
             </div>
           )}
 
-          {/* ← CHANGED: Stacked (portrait): ONE column under the video holding the
-              details card and the quiet links, so they can never overlap.
-              It's pinned between the video and the dots (bottom: 84px). */}
+          {/* ← NEW: Stacked (portrait) slot — one column under the video,
+              pinned between the video and the dots. */}
           {stacked && (
             <div style={{
               position: "absolute",
               left: "50%", transform: "translateX(-50%)",
-              top: vidTop + vidH + 16,
-              bottom: 84,
-              width: "min(92%, 460px)",
+              top: vidTop + vidH + 20,
+              bottom: 76,
+              width: "min(94%, 480px)",
               zIndex: 10,
               display: "flex", flexDirection: "column", justifyContent: "flex-start",
-              gap: 14,
             }}>
-              {phase === "reveal" && (
-                <div
-                  key={step}
-                  style={{
-                    boxSizing: "border-box",
-                    display: "flex", alignItems: "center", gap: 20,
-                    padding: "18px 22px",
-                    borderRadius: 18,
-                    background: "rgba(245,241,232,0.96)",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-                    animation: "fadeOnly .5s ease both",
-                  }}
-                >
-                  <img
-                    src={chapter.logo}
-                    alt={`${chapter.label} logo`}
-                    style={{ width: 72, height: 72, objectFit: "contain", flexShrink: 0 }}
-                  />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ color: "#1f1710", fontWeight: 600, fontSize: "1.4rem", fontFamily: "Georgia, serif" }}>
-                      {chapter.label}
-                    </div>
-                    <div style={{ color: "#4a3f2e", fontSize: "0.95rem", fontFamily: "Georgia, serif", margin: "3px 0 10px", overflowWrap: "anywhere" }}>
-                      {isEmail && emailState === "sent" ? "Sent ✓ — check your mail app" : chapter.value}
-                    </div>
-                    <a
-                      href={chapter.href}
-                      target={isEmail ? undefined : "_blank"}
-                      rel="noreferrer"
-                      onClick={isEmail ? handleEmailAction : undefined}
-                      className="cta-link"
-                      style={{
-                        display: "inline-block", padding: "4px 0",
-                        fontSize: "1.05rem", fontWeight: 700, color: chapter.accent,
-                        textDecoration: "underline", textUnderlineOffset: 4, textDecorationThickness: 2,
-                      }}
-                    >
-                      {isEmail ? "Send an email" : `Open ${chapter.label} →`}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {quietLinks}
+              {phase === "reveal" ? linkCards : skipButton}
             </div>
           )}
 
-          {/* dots — z-index 10 and bigger click targets */}
+          {/* dots */}
           <div style={{
             position: "absolute", left: 0, right: 0, bottom: "4%", zIndex: 10,
             display: "flex", justifyContent: "center",
